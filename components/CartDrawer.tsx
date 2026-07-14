@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
 import { getUpsell } from "@/lib/cart";
+import { gaEvent } from "@/lib/gtag";
 import type { Product } from "@/lib/shopify";
 
 export default function CartDrawer() {
@@ -88,7 +89,22 @@ export default function CartDrawer() {
               <span>Total</span>
               <strong>{cart.cost.totalAmount.amount} {cart.cost.totalAmount.currencyCode}</strong>
             </div>
-            <a href={cart.checkoutUrl} style={{ display: "block", textAlign: "center", padding: "0.85rem", background: "#111", color: "#fff", borderRadius: 8, textDecoration: "none" }}>
+            <a
+              href={cart.checkoutUrl}
+              onClick={() =>
+                gaEvent("begin_checkout", {
+                  currency: cart.cost.totalAmount.currencyCode,
+                  value: Number(cart.cost.totalAmount.amount),
+                  items: cart.lines.nodes.map((l) => ({
+                    item_id: l.merchandise.id,
+                    item_name: l.merchandise.product.title,
+                    price: Number(l.merchandise.price.amount),
+                    quantity: l.quantity,
+                  })),
+                })
+              }
+              style={{ display: "block", textAlign: "center", padding: "0.85rem", background: "#111", color: "#fff", borderRadius: 8, textDecoration: "none" }}
+            >
               Checkout
             </a>
           </footer>

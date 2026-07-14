@@ -28,6 +28,12 @@ export async function getIdToken() {
 }
 
 // Returns a valid access token, transparently refreshing it if expired. Null if logged out.
+// ponytail: cookie writes only work from a Route Handler/Server Action, not a plain
+// Server Component render (Next.js throws) — so when this refreshes from a page like
+// /account, the new token is used for that render but the write is best-effort and may
+// silently no-op, meaning the next page load refreshes again instead of reusing it.
+// Upgrade path: do the refresh in Middleware, which is allowed to write response cookies
+// on every request, so it actually persists.
 export async function getAccessToken(): Promise<string | null> {
   const jar = await cookies();
   const token = jar.get(ACCESS)?.value;
@@ -37,10 +43,10 @@ export async function getAccessToken(): Promise<string | null> {
   if (!refresh) return null;
   try {
     const tokens = await refreshAccessToken(refresh);
-    await setSession(tokens);
+    try { await setSession(tokens); } catch { /* read-only render context */ }
     return tokens.access_token;
   } catch {
-    await clearSession();
+    try { await clearSession(); } catch { /* read-only render context */ }
     return null;
   }
 }

@@ -2,7 +2,16 @@ import Link from "next/link";
 import { getAccessToken } from "@/lib/session";
 import { getCustomer, customerAccountConfigured } from "@/lib/customerAccount";
 
-export default async function AccountPage() {
+const ERROR_MESSAGES: Record<string, string> = {
+  missing_code: "Shopify didn't send back an authorization code.",
+  missing_cookies: "The login session cookies were missing when you got back — often means you started login on a different host/URL than the one Shopify redirected back to, or waited too long (cookies expire after 10 min).",
+  state_mismatch: "The security state didn't match — try logging in again.",
+  token_exchange_failed: "Shopify rejected the token exchange — check the server logs for details.",
+};
+
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const { error } = await searchParams;
+
   if (!customerAccountConfigured) {
     return (
       <main>
@@ -21,6 +30,11 @@ export default async function AccountPage() {
     return (
       <main>
         <h1>Account</h1>
+        {error && (
+          <p style={{ color: "#c00", padding: "0.75rem", background: "#fee", borderRadius: 8, marginBottom: "1rem" }}>
+            {ERROR_MESSAGES[error] ?? `Login failed (${error}).`}
+          </p>
+        )}
         <a href="/api/auth/login" style={{ display: "inline-block", padding: "0.75rem 1.5rem", background: "#111", color: "#fff", borderRadius: 8, textDecoration: "none" }}>
           Log in
         </a>

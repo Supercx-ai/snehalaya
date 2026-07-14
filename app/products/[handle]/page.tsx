@@ -15,6 +15,7 @@ import WhatsAppCTA from "@/components/WhatsAppCTA";
 import ProductAttributes from "@/components/ProductAttributes";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import LocalizedPrice from "@/components/LocalizedPrice";
+import ViewItemTracker from "@/components/ViewItemTracker";
 
 export const revalidate = 3600; // ISR
 
@@ -60,6 +61,12 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
         ]),
       ]}
     />
+    <ViewItemTracker
+      id={product.id}
+      title={product.title}
+      amount={product.priceRange.minVariantPrice.amount}
+      currencyCode={product.priceRange.minVariantPrice.currencyCode}
+    />
     <main style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", alignItems: "start" }}>
       <ProductGallery images={images} title={product.title} />
 
@@ -78,8 +85,16 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
         <SizeGuide />
 
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", margin: "1rem 0" }}>
-          <AddToCart merchandiseId={variant?.id} soldOut={!variant?.availableForSale} />
-          <BuyNowButton merchandiseId={variant?.id} soldOut={!variant?.availableForSale} />
+          <AddToCart
+            merchandiseId={variant?.id}
+            soldOut={!variant?.availableForSale}
+            item={{ id: product.id, title: product.title, amount: product.priceRange.minVariantPrice.amount, currencyCode: product.priceRange.minVariantPrice.currencyCode }}
+          />
+          <BuyNowButton
+            merchandiseId={variant?.id}
+            soldOut={!variant?.availableForSale}
+            item={{ id: product.id, title: product.title, amount: product.priceRange.minVariantPrice.amount, currencyCode: product.priceRange.minVariantPrice.currencyCode }}
+          />
           <WishlistButton
             item={{
               handle: product.handle,

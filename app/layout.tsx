@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getCart } from "@/lib/cart";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { getSelectedCountry } from "@/lib/currency";
 import CartProvider from "@/components/CartProvider";
 import CartButton from "@/components/CartButton";
@@ -19,6 +21,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body style={{ fontFamily: "system-ui, sans-serif", margin: 0, padding: "2rem", maxWidth: 1100, marginInline: "auto" }}>
+        <Suspense fallback={null}>
+          <GoogleAnalytics />
+        </Suspense>
         <CartProvider initialCart={cart} initialCountry={country}>
           <AnnouncementBar />
           <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
