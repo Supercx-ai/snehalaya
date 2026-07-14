@@ -10,7 +10,7 @@ const ROWS: { key: keyof ProductMetafields; label: string }[] = [
   { key: "border_style", label: "Border style" },
   { key: "blouse_included", label: "Blouse included" },
   { key: "blouse_length", label: "Blouse length" },
-  { key: "occasion_tags", label: "Occasion" },
+  { key: "occasion_type", label: "Occasion" },
   { key: "ready_to_ship", label: "Ready to ship" },
   { key: "ship_days", label: "Ships in" },
 ];
@@ -49,7 +49,7 @@ export default function ProductAttributes({ metafields }: { metafields: ProductM
       {metafields.craft_story && (
         <div style={{ marginTop: "1rem" }}>
           <h3 style={{ fontSize: "1rem", marginBottom: "0.25rem" }}>The craft</h3>
-          <p style={{ color: "#444", lineHeight: 1.6, margin: 0 }}>{metafields.craft_story}</p>
+          <p style={{ color: "#444", lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap" }}>{metafields.craft_story}</p>
         </div>
       )}
 

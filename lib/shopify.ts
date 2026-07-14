@@ -73,7 +73,7 @@ export type Product = {
 export const METAFIELD_KEYS = [
   "colour_primary", "colour_secondary", "colour_border", "colour_pallu", "colour_family", "colour_shade",
   "colour_confidence", "dominant_colours", "weave_type", "zari_type", "border_style", "blouse_included",
-  "blouse_length", "occasion_tags", "silk_mark", "gi_tag", "craft_story", "care_instructions",
+  "blouse_length", "occasion_type", "silk_mark", "gi_tag", "craft_story", "care_instructions",
   "ready_to_ship", "ship_days",
 ] as const;
 export type MetafieldKey = (typeof METAFIELD_KEYS)[number];
@@ -130,6 +130,18 @@ const CART_FIELDS = `
     } }
   } }
 `;
+
+// Product/collection pages are ISR-cached (same HTML for every visitor), so their
+// server-rendered price is always the default currency. This is a small, uncached,
+// per-visitor query a client component calls to swap in the selected currency's price
+// without losing ISR on the page itself.
+export function getProductPrice(handle: string, country: CountryCode) {
+  return shopifyFetch<{ product: { priceRange: { minVariantPrice: Money } } | null }>(
+    `query Price($handle: String!) { product(handle: $handle) { priceRange { minVariantPrice { amount currencyCode } } } }`,
+    { handle },
+    { cache: "no-store", country }
+  ).then((d) => d.product?.priceRange.minVariantPrice ?? null);
+}
 
 // --- Products ---
 export function getProducts(first = 24) {
@@ -382,6 +394,21 @@ export function cartDiscountCodesUpdate(cartId: string, codes: string[], country
     { cartId, codes },
     { cache: "no-store", country }
   ).then((d) => d.cartDiscountCodesUpdate.cart);
+}
+
+// Re-prices an EXISTING cart. A cart's currency is fixed at creation time — re-querying it
+// under a different @inContext does NOT change its cost (verified live). This mutation is
+// the actual mechanism Shopify uses to switch an existing cart's currency.
+export function cartBuyerIdentityUpdate(cartId: string, countryCode: CountryCode) {
+  return shopifyFetch<{ cartBuyerIdentityUpdate: CartResult }>(
+    `mutation UpdateIdentity($cartId: ID!, $countryCode: CountryCode!) {
+      cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: { countryCode: $countryCode }) {
+        cart { ${CART_FIELDS} } userErrors { message }
+      }
+    }`,
+    { cartId, countryCode },
+    { cache: "no-store" }
+  ).then((d) => d.cartBuyerIdentityUpdate.cart);
 }
 
 // Upsell strip in the cart drawer — recommendations based on the first line's product.

@@ -1,11 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState, useTransition, type ReactNode } from "react";
-import { addToCart, updateCartLine, removeCartLine, applyDiscountCode, getCart } from "@/lib/cart";
-import type { Cart } from "@/lib/shopify";
+import { addToCart, updateCartLine, removeCartLine, applyDiscountCode, switchCurrency as switchCurrencyAction } from "@/lib/cart";
+import type { Cart, CountryCode } from "@/lib/shopify";
 
 type CartContextValue = {
   cart: Cart | null;
+  country: CountryCode;
   open: boolean;
   setOpen: (open: boolean) => void;
   pending: boolean;
@@ -13,7 +14,7 @@ type CartContextValue = {
   updateLine: (lineId: string, quantity: number) => void;
   removeLine: (lineId: string) => void;
   applyCode: (code: string) => Promise<boolean>;
-  refreshCart: () => void;
+  switchCurrency: (country: CountryCode) => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -24,8 +25,17 @@ export function useCart() {
   return ctx;
 }
 
-export default function CartProvider({ initialCart, children }: { initialCart: Cart | null; children: ReactNode }) {
+export default function CartProvider({
+  initialCart,
+  initialCountry,
+  children,
+}: {
+  initialCart: Cart | null;
+  initialCountry: CountryCode;
+  children: ReactNode;
+}) {
   const [cart, setCart] = useState(initialCart);
+  const [country, setCountry] = useState(initialCountry);
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
 
@@ -47,12 +57,13 @@ export default function CartProvider({ initialCart, children }: { initialCart: C
       });
     });
 
-  // Re-fetch after switching currency (@inContext repricing) — cart reads are no-store,
-  // so this always reflects the just-changed cookie.
-  const refreshCart = () => start(async () => { setCart(await getCart()); });
+  // Actually re-prices the existing cart (cartBuyerIdentityUpdate) — a plain re-fetch
+  // with a different @inContext does not change an already-created cart's currency.
+  const switchCurrency = (next: CountryCode) =>
+    start(async () => { setCountry(next); setCart(await switchCurrencyAction(next)); });
 
   return (
-    <CartContext.Provider value={{ cart, open, setOpen, pending, addLine, updateLine, removeLine, applyCode, refreshCart }}>
+    <CartContext.Provider value={{ cart, country, open, setOpen, pending, addLine, updateLine, removeLine, applyCode, switchCurrency }}>
       {children}
     </CartContext.Provider>
   );

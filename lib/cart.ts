@@ -8,10 +8,12 @@ import {
   cartLinesUpdate,
   cartLinesRemove,
   cartDiscountCodesUpdate,
+  cartBuyerIdentityUpdate,
   getCart as fetchCart,
   getProductRecommendations,
+  type CountryCode,
 } from "./shopify";
-import { getSelectedCountry } from "./currency";
+import { getSelectedCountry, setCurrency } from "./currency";
 
 const COOKIE = "cartId";
 
@@ -59,4 +61,22 @@ export async function applyDiscountCode(code: string) {
 
 export async function getUpsell(productId: string) {
   return getProductRecommendations(productId);
+}
+
+// Sets the visitor's currency AND, if they already have a cart, actually re-prices it
+// (a plain re-fetch with a different @inContext does not change an existing cart's currency).
+export async function switchCurrency(country: CountryCode) {
+  await setCurrency(country);
+  const id = (await cookies()).get(COOKIE)?.value;
+  if (!id) return null;
+  const cart = await cartBuyerIdentityUpdate(id, country);
+  revalidatePath("/cart");
+  return cart;
+}
+
+// Buy Now: a fresh single-item cart (ignores whatever's already in the visitor's cart),
+// straight to Shopify checkout.
+export async function buyNow(merchandiseId: string) {
+  const cart = await cartCreate(merchandiseId, 1, await getSelectedCountry());
+  return cart?.checkoutUrl ?? null;
 }

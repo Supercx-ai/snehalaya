@@ -5,6 +5,7 @@ import ProductGrid from "@/components/ProductGrid";
 import { generateProductStructuredData, generateBreadcrumbStructuredData } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
 import AddToCart from "@/components/AddToCart";
+import BuyNowButton from "@/components/BuyNowButton";
 import ProductGallery from "@/components/ProductGallery";
 import ShareButton from "@/components/ShareButton";
 import WishlistButton from "@/components/WishlistButton";
@@ -13,6 +14,7 @@ import ReviewsWidget from "@/components/ReviewsWidget";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
 import ProductAttributes from "@/components/ProductAttributes";
 import RecentlyViewed from "@/components/RecentlyViewed";
+import LocalizedPrice from "@/components/LocalizedPrice";
 
 export const revalidate = 3600; // ISR
 
@@ -64,7 +66,11 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
       <div>
         <h1 style={{ marginTop: 0, marginBottom: "0.25rem" }}>{product.title}</h1>
         <p style={{ fontSize: "1.2rem" }}>
-          {product.priceRange.minVariantPrice.amount} {product.priceRange.minVariantPrice.currencyCode}
+          <LocalizedPrice
+            handle={product.handle}
+            amount={product.priceRange.minVariantPrice.amount}
+            currencyCode={product.priceRange.minVariantPrice.currencyCode}
+          />
         </p>
         <p style={{ color: "#444", lineHeight: 1.6 }}>{product.description}</p>
 
@@ -73,7 +79,16 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", margin: "1rem 0" }}>
           <AddToCart merchandiseId={variant?.id} soldOut={!variant?.availableForSale} />
-          <WishlistButton handle={product.handle} />
+          <BuyNowButton merchandiseId={variant?.id} soldOut={!variant?.availableForSale} />
+          <WishlistButton
+            item={{
+              handle: product.handle,
+              title: product.title,
+              image: product.featuredImage?.url ?? null,
+              amount: product.priceRange.minVariantPrice.amount,
+              currencyCode: product.priceRange.minVariantPrice.currencyCode,
+            }}
+          />
           <ShareButton title={product.title} />
         </div>
 

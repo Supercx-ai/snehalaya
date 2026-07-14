@@ -4,21 +4,25 @@ import { useEffect, useState } from "react";
 
 const KEY = "wishlist";
 
-function read(): string[] {
+export type WishlistItem = { handle: string; title: string; image: string | null; amount: string; currencyCode: string };
+
+function read(): WishlistItem[] {
   if (typeof window === "undefined") return [];
   try { return JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch { return []; }
 }
 
 export function useWishlist() {
-  const [handles, setHandles] = useState<string[]>([]);
+  const [items, setItems] = useState<WishlistItem[]>([]);
 
-  useEffect(() => { setHandles(read()); }, []);
+  useEffect(() => { setItems(read()); }, []);
 
-  function toggleWishlist(handle: string) {
-    const next = handles.includes(handle) ? handles.filter((h) => h !== handle) : [...handles, handle];
-    setHandles(next);
+  function toggleWishlist(item: WishlistItem) {
+    const next = items.some((i) => i.handle === item.handle)
+      ? items.filter((i) => i.handle !== item.handle)
+      : [...items, item];
+    setItems(next);
     localStorage.setItem(KEY, JSON.stringify(next));
   }
 
-  return { wishlistItems: handles, isWishlisted: (handle: string) => handles.includes(handle), toggleWishlist };
+  return { wishlistItems: items, isWishlisted: (handle: string) => items.some((i) => i.handle === handle), toggleWishlist };
 }
