@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import ProductGrid from "./ProductGrid";
 import type { Product, ProductFilter } from "@/lib/shopify";
 
-type Page = { nodes: Product[]; filters: ProductFilter[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } };
+type Page = { nodes: Product[]; filters?: ProductFilter[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } };
 
 // Auto-fetches the next page when the sentinel scrolls into view.
 // `resetKey` (the filter/sort/query string) forces a remount on change,

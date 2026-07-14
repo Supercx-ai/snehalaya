@@ -6,6 +6,7 @@ import WhatsAppCTA from "@/components/WhatsAppCTA";
 import ReviewsWidget from "@/components/ReviewsWidget";
 import InstagramFeed from "@/components/InstagramFeed";
 import BrandAmbassador from "@/components/BrandAmbassador";
+import ColourPicker from "@/components/ColourPicker";
 
 export const revalidate = 600; // ISR: rebuild at most every 10 min; webhook busts it sooner
 
@@ -50,6 +51,11 @@ export default async function Home() {
           ))}
         </section>
       )}
+
+      <section style={{ marginBottom: "3rem" }}>
+        <h2>Shop by colour</h2>
+        <ColourPicker />
+      </section>
 
       <BrandAmbassador />
 

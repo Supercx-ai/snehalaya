@@ -1,8 +1,10 @@
 import crypto from "node:crypto";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
-// Shopify product webhooks (create/update/delete) → verify HMAC → bust cached data.
-// Set the webhook URL to https://<your-domain>/api/revalidate in Shopify Admin.
+// Shopify webhooks → verify HMAC → bust exactly the cached data that changed.
+// Register these topics in Admin → Settings → Notifications → Webhooks, all pointing
+// to https://<your-domain>/api/revalidate: products/create, products/update,
+// products/delete, collections/update, articles/update, inventory_levels/update.
 export async function POST(req: Request) {
   const body = await req.text(); // raw body required for HMAC
   const sent = req.headers.get("x-shopify-hmac-sha256") ?? "";
@@ -17,11 +19,30 @@ export async function POST(req: Request) {
     return new Response("invalid signature", { status: 401 });
   }
 
-  revalidateTag("products");
-  revalidateTag("collections");
-  revalidateTag("blog");
+  const topic = req.headers.get("x-shopify-topic") ?? "";
   const handle = (JSON.parse(body) as { handle?: string }).handle;
-  if (handle) { revalidateTag(`product:${handle}`); revalidateTag(`article:${handle}`); }
 
-  return Response.json({ revalidated: true });
+  if (topic.startsWith("products/")) {
+    revalidateTag("products");
+    if (handle) { revalidateTag(`product:${handle}`); revalidatePath(`/products/${handle}`); }
+  } else if (topic.startsWith("collections/")) {
+    revalidateTag("collections");
+    if (handle) { revalidateTag(`collection:${handle}`); revalidatePath(`/collections/${handle}`); }
+  } else if (topic.startsWith("articles/")) {
+    revalidateTag("blog");
+    if (handle) revalidateTag(`article:${handle}`);
+  } else if (topic.startsWith("metaobjects/")) {
+    revalidateTag("metaobjects");
+  } else if (topic === "inventory_levels/update") {
+    // ponytail: payload only has inventory_item_id, not the product handle — a precise
+    // bust needs an Admin API lookup. Blunt-bust all products until that's worth adding.
+    revalidateTag("products");
+  } else {
+    // Unknown/unregistered topic — bust everything rather than silently do nothing.
+    revalidateTag("products");
+    revalidateTag("collections");
+    revalidateTag("blog");
+  }
+
+  return Response.json({ revalidated: true, topic });
 }

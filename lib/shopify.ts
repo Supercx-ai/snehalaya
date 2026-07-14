@@ -14,10 +14,26 @@ const endpoint = live
 
 type GraphQLResponse<T> = { data?: T; errors?: { message: string }[] };
 
+// Shopify Markets country codes this storefront offers a currency switch for.
+// Real localized prices — only takes effect once Markets is configured in Admin for
+// that country; until then Shopify just returns the shop's default currency (safe no-op,
+// verified live: passing country:"US" today still returns INR because no US market exists yet).
+export type CountryCode = "IN" | "US" | "GB" | "AE" | "SG" | "MY";
+
+// Inserts `@inContext(country: $country)` onto the operation signature so every query/
+// mutation can opt into localized pricing by passing opts.country, without hand-editing
+// each query string. Operation signatures always look like `query Name(...)`/`mutation Name(...)`.
+function withContext(query: string): string {
+  return query.replace(
+    /^(\s*)(query|mutation)(\s+\w+)?\s*\(([^)]*)\)/,
+    (_m, ws, kind, name = "", params) => `${ws}${kind}${name}(${params}, $country: CountryCode) @inContext(country: $country)`
+  );
+}
+
 export async function shopifyFetch<T>(
   query: string,
   variables: Record<string, unknown> = {},
-  opts: { tags?: string[]; cache?: RequestCache } = {}
+  opts: { tags?: string[]; cache?: RequestCache; country?: CountryCode } = {}
 ): Promise<T> {
   const res = await fetch(endpoint, {
     method: "POST",
@@ -26,7 +42,10 @@ export async function shopifyFetch<T>(
       // mock.shop needs no token; only send it when hitting a real store.
       ...(live ? { "X-Shopify-Storefront-Access-Token": token! } : {}),
     },
-    body: JSON.stringify({ query, variables }),
+    body: JSON.stringify({
+      query: opts.country ? withContext(query) : query,
+      variables: opts.country ? { ...variables, country: opts.country } : variables,
+    }),
     cache: opts.cache ?? "force-cache",
     ...(opts.tags ? { next: { tags: opts.tags } } : {}),
   });
@@ -49,12 +68,21 @@ export type Product = {
   priceRange: { minVariantPrice: Money };
   variants: { nodes: { id: string; availableForSale: boolean }[] };
 };
+// Custom fields the store owner is expected to add in Admin → Settings → Custom data →
+// Products, marked Storefront-visible. All optional — missing keys just render nothing.
+export const METAFIELD_KEYS = [
+  "colour_primary", "colour_secondary", "colour_border", "colour_pallu", "colour_family", "colour_shade",
+  "colour_confidence", "dominant_colours", "weave_type", "zari_type", "border_style", "blouse_included",
+  "blouse_length", "occasion_tags", "silk_mark", "gi_tag", "craft_story", "care_instructions",
+  "ready_to_ship", "ship_days",
+] as const;
+export type MetafieldKey = (typeof METAFIELD_KEYS)[number];
+export type ProductMetafields = Partial<Record<MetafieldKey, string>>;
+
 export type ProductDetail = Product & {
   tags: string[];
   images: { nodes: ImageT[] };
-  // Storefront-visible metafields — null until the store owner adds them (Admin → custom data).
-  silkMark: { value: string } | null;
-  blousePiece: { value: string } | null;
+  metafields: ProductMetafields;
 };
 export type Collection = {
   id: string;
@@ -128,21 +156,46 @@ export function getProductsPage(first = 12, after?: string) {
   ).then((d) => d.products);
 }
 
-// Metafield keys are a guess (custom.silk_mark / custom.blouse_piece) — confirm the real
-// namespace/key once the store owner sets these up in Admin → Settings → Custom data,
-// and mark them Storefront-visible or this always returns null.
+const METAFIELD_IDENTIFIERS = METAFIELD_KEYS.map((key) => `{ namespace: "custom", key: "${key}" }`).join(", ");
+
+// Namespace "custom" is a guess — confirm the real namespace once these are set up in
+// Admin → Settings → Custom data → Products (must be marked Storefront-visible, or every
+// value here stays null even after the fields exist).
+// Tag/keyword search via the products field's `query` string (Shopify search syntax,
+// e.g. "tag:blue"). Used for colour landing pages until a real colour_family metafield exists.
+export function getProductsByQuery(query: string, opts: { first?: number; after?: string } = {}) {
+  return shopifyFetch<{
+    products: { nodes: Product[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } };
+  }>(
+    `query ByQuery($query: String!, $first: Int!, $after: String) {
+      products(query: $query, first: $first, after: $after) {
+        nodes { ${PRODUCT_FIELDS} }
+        pageInfo { hasNextPage endCursor }
+      }
+    }`,
+    { query, first: opts.first ?? 12, after: opts.after },
+    { tags: ["products"] }
+  ).then((d) => d.products);
+}
+
 export function getProduct(handle: string) {
-  return shopifyFetch<{ product: ProductDetail | null }>(
+  return shopifyFetch<{
+    product: (Product & { tags: string[]; images: { nodes: ImageT[] }; metafields: ({ key: string; value: string } | null)[] }) | null;
+  }>(
     `query Product($handle: String!) { product(handle: $handle) {
       ${PRODUCT_FIELDS}
       tags
       images(first: 8) { nodes { url altText width height } }
-      silkMark: metafield(namespace: "custom", key: "silk_mark") { value }
-      blousePiece: metafield(namespace: "custom", key: "blouse_piece") { value }
+      metafields(identifiers: [${METAFIELD_IDENTIFIERS}]) { key value }
     } }`,
     { handle },
     { tags: ["products", `product:${handle}`] }
-  ).then((d) => d.product);
+  ).then((d): ProductDetail | null => {
+    if (!d.product) return null;
+    const metafields: ProductMetafields = {};
+    for (const m of d.product.metafields) if (m) metafields[m.key as MetafieldKey] = m.value;
+    return { ...d.product, metafields };
+  });
 }
 
 // --- Collections ---
@@ -216,6 +269,22 @@ export function getArticle(articleHandle: string, blogHandle = "news") {
   ).then((d) => d.blog?.articleByHandle ?? null);
 }
 
+// --- Metaobjects ---
+// Type/field keys are a guess — confirm once you create the "Announcement bar" metaobject
+// definition in Admin → Content → Metaobjects (expects fields named "message" and "link").
+export function getAnnouncementBar() {
+  return shopifyFetch<{ metaobjects: { nodes: { fields: { key: string; value: string | null }[] }[] } }>(
+    `{ metaobjects(type: "announcement_bar", first: 1) { nodes { fields { key value } } } }`,
+    {},
+    { tags: ["metaobjects"] }
+  ).then((d) => {
+    const fields = d.metaobjects.nodes[0]?.fields;
+    if (!fields) return null;
+    const map = Object.fromEntries(fields.map((f) => [f.key, f.value]));
+    return { message: map.message ?? null, link: map.link ?? null };
+  });
+}
+
 // --- Search ---
 // Full results page — same filter/sort shape as collections, reuses ProductFilter/FilterValue.
 export function searchProducts(
@@ -255,61 +324,63 @@ export function predictiveSearch(query: string) {
 // --- Cart (mutations: never cached) ---
 type CartResult = { cart: Cart | null; userErrors: { message: string }[] };
 
-export function getCart(id: string) {
+// Cart reads/mutations are already no-store (per-visitor, never cached) — unlike product/
+// collection pages (ISR'd, same HTML for everyone), so `country` here is always safe to honor.
+export function getCart(id: string, country?: CountryCode) {
   return shopifyFetch<{ cart: Cart | null }>(
     `query Cart($id: ID!) { cart(id: $id) { ${CART_FIELDS} } }`,
     { id },
-    { cache: "no-store" }
+    { cache: "no-store", country }
   ).then((d) => d.cart);
 }
 
-export function cartCreate(merchandiseId: string, quantity = 1) {
+export function cartCreate(merchandiseId: string, quantity = 1, country?: CountryCode) {
   return shopifyFetch<{ cartCreate: CartResult }>(
     `mutation Create($lines: [CartLineInput!]) {
       cartCreate(input: { lines: $lines }) { cart { ${CART_FIELDS} } userErrors { message } }
     }`,
     { lines: [{ merchandiseId, quantity }] },
-    { cache: "no-store" }
+    { cache: "no-store", country }
   ).then((d) => d.cartCreate.cart);
 }
 
-export function cartLinesAdd(cartId: string, merchandiseId: string, quantity = 1) {
+export function cartLinesAdd(cartId: string, merchandiseId: string, quantity = 1, country?: CountryCode) {
   return shopifyFetch<{ cartLinesAdd: CartResult }>(
     `mutation Add($cartId: ID!, $lines: [CartLineInput!]!) {
       cartLinesAdd(cartId: $cartId, lines: $lines) { cart { ${CART_FIELDS} } userErrors { message } }
     }`,
     { cartId, lines: [{ merchandiseId, quantity }] },
-    { cache: "no-store" }
+    { cache: "no-store", country }
   ).then((d) => d.cartLinesAdd.cart);
 }
 
-export function cartLinesUpdate(cartId: string, lineId: string, quantity: number) {
+export function cartLinesUpdate(cartId: string, lineId: string, quantity: number, country?: CountryCode) {
   return shopifyFetch<{ cartLinesUpdate: CartResult }>(
     `mutation Update($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
       cartLinesUpdate(cartId: $cartId, lines: $lines) { cart { ${CART_FIELDS} } userErrors { message } }
     }`,
     { cartId, lines: [{ id: lineId, quantity }] },
-    { cache: "no-store" }
+    { cache: "no-store", country }
   ).then((d) => d.cartLinesUpdate.cart);
 }
 
-export function cartLinesRemove(cartId: string, lineId: string) {
+export function cartLinesRemove(cartId: string, lineId: string, country?: CountryCode) {
   return shopifyFetch<{ cartLinesRemove: CartResult }>(
     `mutation Remove($cartId: ID!, $lineIds: [ID!]!) {
       cartLinesRemove(cartId: $cartId, lineIds: $lineIds) { cart { ${CART_FIELDS} } userErrors { message } }
     }`,
     { cartId, lineIds: [lineId] },
-    { cache: "no-store" }
+    { cache: "no-store", country }
   ).then((d) => d.cartLinesRemove.cart);
 }
 
-export function cartDiscountCodesUpdate(cartId: string, codes: string[]) {
+export function cartDiscountCodesUpdate(cartId: string, codes: string[], country?: CountryCode) {
   return shopifyFetch<{ cartDiscountCodesUpdate: CartResult }>(
     `mutation Discount($cartId: ID!, $codes: [String!]) {
       cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $codes) { cart { ${CART_FIELDS} } userErrors { message } }
     }`,
     { cartId, codes },
-    { cache: "no-store" }
+    { cache: "no-store", country }
   ).then((d) => d.cartDiscountCodesUpdate.cart);
 }
 

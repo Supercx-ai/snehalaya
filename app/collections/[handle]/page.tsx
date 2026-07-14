@@ -1,13 +1,25 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getCollection, getCollections } from "@/lib/shopify";
 import { loadMoreCollectionProducts } from "@/lib/collection";
+import { generateCollectionStructuredData, generateBreadcrumbStructuredData } from "@/lib/seo";
+import JsonLd from "@/components/JsonLd";
 import InfiniteProducts from "@/components/InfiniteProducts";
 
 export const revalidate = 3600; // ISR: rebuild at most hourly; product-update webhook busts it sooner
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export async function generateStaticParams() {
   const collections = await getCollections(100);
   return collections.map((c) => ({ handle: c.handle }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
+  const { handle } = await params;
+  const collection = await getCollection(handle, { first: 1 });
+  if (!collection) return {};
+  return { title: collection.title, description: collection.description };
 }
 
 const SORTS: Record<string, { sortKey?: string; reverse?: boolean; label: string }> = {
@@ -38,8 +50,19 @@ export default async function CollectionPage({
   if (!collection) notFound();
 
   const { nodes, filters: availableFilters, pageInfo } = collection.products;
+  const url = `${SITE_URL}/collections/${handle}`;
 
   return (
+    <>
+    <JsonLd
+      data={[
+        generateCollectionStructuredData(collection, url),
+        generateBreadcrumbStructuredData([
+          { name: "Home", url: SITE_URL },
+          { name: collection.title, url },
+        ]),
+      ]}
+    />
     <main>
       <h1 style={{ marginTop: 0 }}>{collection.title}</h1>
       {collection.description && <p style={{ color: "#555" }}>{collection.description}</p>}
@@ -93,5 +116,6 @@ export default async function CollectionPage({
         />
       </div>
     </main>
+    </>
   );
 }

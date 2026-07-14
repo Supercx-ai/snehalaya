@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useTransition, type ReactNode } from "react";
-import { addToCart, updateCartLine, removeCartLine, applyDiscountCode } from "@/lib/cart";
+import { addToCart, updateCartLine, removeCartLine, applyDiscountCode, getCart } from "@/lib/cart";
 import type { Cart } from "@/lib/shopify";
 
 type CartContextValue = {
@@ -13,6 +13,7 @@ type CartContextValue = {
   updateLine: (lineId: string, quantity: number) => void;
   removeLine: (lineId: string) => void;
   applyCode: (code: string) => Promise<boolean>;
+  refreshCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -46,8 +47,12 @@ export default function CartProvider({ initialCart, children }: { initialCart: C
       });
     });
 
+  // Re-fetch after switching currency (@inContext repricing) — cart reads are no-store,
+  // so this always reflects the just-changed cookie.
+  const refreshCart = () => start(async () => { setCart(await getCart()); });
+
   return (
-    <CartContext.Provider value={{ cart, open, setOpen, pending, addLine, updateLine, removeLine, applyCode }}>
+    <CartContext.Provider value={{ cart, open, setOpen, pending, addLine, updateLine, removeLine, applyCode, refreshCart }}>
       {children}
     </CartContext.Provider>
   );

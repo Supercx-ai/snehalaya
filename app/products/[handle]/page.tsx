@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
-import { getProduct, getProducts } from "@/lib/shopify";
+import type { Metadata } from "next";
+import { getProduct, getProducts, getProductRecommendations } from "@/lib/shopify";
+import ProductGrid from "@/components/ProductGrid";
+import { generateProductStructuredData, generateBreadcrumbStructuredData } from "@/lib/seo";
+import JsonLd from "@/components/JsonLd";
 import AddToCart from "@/components/AddToCart";
 import ProductGallery from "@/components/ProductGallery";
 import ShareButton from "@/components/ShareButton";
@@ -7,13 +11,28 @@ import WishlistButton from "@/components/WishlistButton";
 import SizeGuide from "@/components/SizeGuide";
 import ReviewsWidget from "@/components/ReviewsWidget";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
+import ProductAttributes from "@/components/ProductAttributes";
+import RecentlyViewed from "@/components/RecentlyViewed";
 
 export const revalidate = 3600; // ISR
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 // Pre-render existing product pages at build; new handles render on-demand then cache.
 export async function generateStaticParams() {
   const products = await getProducts(100);
   return products.map((p) => ({ handle: p.handle }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
+  const { handle } = await params;
+  const product = await getProduct(handle);
+  if (!product) return {};
+  return {
+    title: product.title,
+    description: product.description,
+    openGraph: { images: product.featuredImage ? [product.featuredImage.url] : [] },
+  };
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ handle: string }> }) {
@@ -23,32 +42,38 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
   const variant = product.variants.nodes[0]; // simple store: buy the first variant
   const images = product.images.nodes.length > 0 ? product.images.nodes : product.featuredImage ? [product.featuredImage] : [];
-  const isSilk = product.silkMark?.value === "true" || product.tags.some((t) => t.toLowerCase() === "silk-mark");
+  const url = `${SITE_URL}/products/${product.handle}`;
+  // Shopify's own recommendation model — real signal today, unlike a hand-rolled
+  // colour/weave/border scorer that would need metafields that don't exist yet.
+  const similar = await getProductRecommendations(product.id);
 
   return (
+    <>
+    <JsonLd
+      data={[
+        generateProductStructuredData(product, url),
+        generateBreadcrumbStructuredData([
+          { name: "Home", url: SITE_URL },
+          { name: product.title, url },
+        ]),
+      ]}
+    />
     <main style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", alignItems: "start" }}>
       <ProductGallery images={images} title={product.title} />
 
       <div>
         <h1 style={{ marginTop: 0, marginBottom: "0.25rem" }}>{product.title}</h1>
-        {isSilk && (
-          <span style={{ display: "inline-block", padding: "0.2rem 0.6rem", borderRadius: 999, background: "#fff3cd", color: "#7a5c00", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-            Silk Mark Certified
-          </span>
-        )}
         <p style={{ fontSize: "1.2rem" }}>
           {product.priceRange.minVariantPrice.amount} {product.priceRange.minVariantPrice.currencyCode}
         </p>
         <p style={{ color: "#444", lineHeight: 1.6 }}>{product.description}</p>
 
-        {product.blousePiece?.value && (
-          <p style={{ color: "#444" }}><strong>Blouse piece:</strong> {product.blousePiece.value}</p>
-        )}
+        <ProductAttributes metafields={product.metafields} />
         <SizeGuide />
 
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", margin: "1rem 0" }}>
           <AddToCart merchandiseId={variant?.id} soldOut={!variant?.availableForSale} />
-          <WishlistButton />
+          <WishlistButton handle={product.handle} />
           <ShareButton title={product.title} />
         </div>
 
@@ -58,6 +83,26 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
       </div>
 
       <WhatsAppCTA text={`Hi! I'm interested in "${product.title}" — is it available?`} />
+
+      {similar.length > 0 && (
+        <div style={{ gridColumn: "1 / -1", marginTop: "2rem" }}>
+          <h2 style={{ fontSize: "1.1rem" }}>You may also like</h2>
+          <ProductGrid products={similar} />
+        </div>
+      )}
+
+      <div style={{ gridColumn: "1 / -1" }}>
+        <RecentlyViewed
+          current={{
+            handle: product.handle,
+            title: product.title,
+            image: product.featuredImage?.url ?? null,
+            amount: product.priceRange.minVariantPrice.amount,
+            currencyCode: product.priceRange.minVariantPrice.currencyCode,
+          }}
+        />
+      </div>
     </main>
+    </>
   );
 }
