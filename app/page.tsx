@@ -1,75 +1,67 @@
-import Image from "next/image";
-import Link from "next/link";
-import { getCollections, getProductsPage } from "@/lib/shopify";
+import { getProductsPage, getColorFilterValues, getFabricFilterValues, getCollection } from "@/lib/shopify";
 import Products from "@/components/Products";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
-import ReviewsWidget from "@/components/ReviewsWidget";
 import InstagramFeed from "@/components/InstagramFeed";
 import BrandAmbassador from "@/components/BrandAmbassador";
 import ColourPicker from "@/components/ColourPicker";
+import SareeFinder from "@/components/SareeFinder";
+import Hero from "@/components/Hero";
+import ShopByWeave from "@/components/ShopByWeave";
+import ShopByOccasion from "@/components/ShopByOccasion";
+import NewArrivals from "@/components/NewArrivals";
+import SearchByImagePromo from "@/components/SearchByImagePromo";
+import PromoBanner from "@/components/PromoBanner";
+import KanjivaramEdit from "@/components/KanjivaramEdit";
+import TrendingPicks from "@/components/TrendingPicks";
+import MaharaniPromo from "@/components/MaharaniPromo";
+import LiveShoppingPromo from "@/components/LiveShoppingPromo";
+import ShopTheLook from "@/components/ShopTheLook";
+import WornAndLoved from "@/components/WornAndLoved";
 
 export const revalidate = 600; // ISR: rebuild at most every 10 min; webhook busts it sooner
 
 export default async function Home() {
   // One round-trip each, in parallel.
-  const [collections, firstPage] = await Promise.all([getCollections(8), getProductsPage(12)]);
-  const banner = collections.find((c) => c.image); // first collection with an image = hero
+  const [firstPage, colours, fabrics, newArrivals, trending, snehasPicks] = await Promise.all([
+    getProductsPage(12),
+    getColorFilterValues(),
+    getFabricFilterValues(),
+    getCollection("new-arrivals", { first: 10, sortKey: "CREATED", reverse: true }),
+    getCollection("new-arrivals", { first: 8, sortKey: "BEST_SELLING" }),
+    getCollection("maharani-exclusive", { first: 8 }),
+  ]);
+  const newArrivalProducts = newArrivals?.products.nodes ?? [];
+  // Show 2 different products in the promo card when the catalogue is large enough;
+  // otherwise fall back to reusing the first 2 rather than rendering an empty gap.
+  const promoProducts = newArrivalProducts.length > 8 ? newArrivalProducts.slice(8, 10) : newArrivalProducts.slice(0, 2);
 
   return (
     <main>
-      {banner?.image && (
-        <Link href={`/collections/${banner.handle}`} style={{ display: "block", position: "relative", marginBottom: "2rem" }}>
-          <Image
-            src={banner.image.url}
-            alt={banner.image.altText ?? banner.title}
-            width={banner.image.width}
-            height={banner.image.height}
-            priority
-            style={{ width: "100%", height: 320, objectFit: "cover", borderRadius: 12 }}
-          />
-          <span style={{ position: "absolute", left: 24, bottom: 24, color: "#fff", fontSize: "2rem", fontWeight: 700, textShadow: "0 2px 8px rgba(0,0,0,.5)" }}>
-            {banner.title}
-          </span>
-        </Link>
-      )}
+      <Hero />
+      <ShopByWeave />
+      <ShopByOccasion />
+      <SareeFinder fabrics={fabrics} colours={colours} />
+      <NewArrivals products={newArrivalProducts.slice(0, 8)} />
+      <SearchByImagePromo products={promoProducts} />
+      <PromoBanner />
+      <KanjivaramEdit />
+      <TrendingPicks trending={trending?.products.nodes ?? []} snehasPicks={snehasPicks?.products.nodes ?? []} />
+      <MaharaniPromo />
+      <LiveShoppingPromo />
+      <ShopTheLook />
+      <InstagramFeed />
+      <WornAndLoved />
 
-      {collections.length > 0 && (
-        <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "1rem", marginBottom: "3rem" }}>
-          {collections.map((c) => (
-            <Link key={c.id} href={`/collections/${c.handle}`} style={{ textDecoration: "none", color: "inherit" }}>
-              {c.image && (
-                <Image
-                  src={c.image.url}
-                  alt={c.image.altText ?? c.title}
-                  width={c.image.width}
-                  height={c.image.height}
-                  style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 8 }}
-                />
-              )}
-              <p style={{ margin: "0.5rem 0 0", fontWeight: 600 }}>{c.title}</p>
-            </Link>
-          ))}
+      {colours.length > 0 && (
+        <section style={{ marginBottom: "3rem" }}>
+          <h2>Shop by colour</h2>
+          <ColourPicker colours={colours} />
         </section>
       )}
-
-      <section style={{ marginBottom: "3rem" }}>
-        <h2>Shop by colour</h2>
-        <ColourPicker />
-      </section>
 
       <BrandAmbassador />
 
       <Products initial={firstPage.nodes} cursor={firstPage.pageInfo.endCursor} hasNext={firstPage.pageInfo.hasNextPage} />
-
-      <section style={{ margin: "3rem 0" }}>
-        <h2>Customer reviews</h2>
-        <ReviewsWidget />
-      </section>
-
-      <section style={{ margin: "3rem 0" }}>
-        <h2>From Instagram</h2>
-        <InstagramFeed />
-      </section>
 
       <WhatsAppCTA />
     </main>

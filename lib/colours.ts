@@ -1,17 +1,27 @@
-// Static swatch list — matched against product tags (e.g. a product tagged "blue"),
-// not a colour_family metafield (doesn't exist yet). Once that metafield is populated,
-// swap the `tag:` query in app/colours/[family]/page.tsx for a real productFilter.
-export const COLOUR_FAMILIES = [
-  { slug: "red", name: "Red", hex: "#c0392b" },
-  { slug: "pink", name: "Pink", hex: "#e91e8c" },
-  { slug: "blue", name: "Blue", hex: "#2563eb" },
-  { slug: "green", name: "Green", hex: "#16a34a" },
-  { slug: "yellow", name: "Yellow", hex: "#eab308" },
-  { slug: "orange", name: "Orange", hex: "#ea580c" },
-  { slug: "purple", name: "Purple", hex: "#7c3aed" },
-  { slug: "black", name: "Black", hex: "#111111" },
-  { slug: "white", name: "White", hex: "#f5f5f5" },
-  { slug: "gold", name: "Gold", hex: "#d4af37" },
-  { slug: "beige", name: "Beige", hex: "#d8c3a5" },
-  { slug: "multicolour", name: "Multicolour", hex: "conic-gradient(red, orange, yellow, green, blue, purple, red)" },
-] as const;
+import type { ColorFilterValue } from "./shopify";
+
+// No static colour list anymore — every colour shown on the site comes live from
+// Shopify's Color category metafield (getColorFilterValues). Add/remove/rename a colour
+// in Admin and it shows up or disappears here automatically, no code change.
+
+export function slugifyColour(label: string) {
+  return label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+// CSS understands most colour words directly ("purple", "gold", "red"...) — no manual
+// hex table to maintain. Only "Multicolor" needs a special-cased swatch; anything else
+// Shopify's taxonomy adds later just works as long as it's a real CSS colour name.
+export function colourSwatch(label: string): string {
+  const key = label.toLowerCase().replace(/\s+/g, "");
+  if (key === "multicolor" || key === "multicolour") {
+    return "conic-gradient(red, orange, yellow, green, blue, purple, red)";
+  }
+  return key;
+}
+
+// Matches a URL slug (e.g. from /colours/purple) back to the live filter value, returning
+// Shopify's ready-to-use filter input.
+export function resolveColourSlug(slug: string, liveValues: ColorFilterValue[]): Record<string, unknown> | null {
+  const match = liveValues.find((v) => slugifyColour(v.label) === slug);
+  return match ? JSON.parse(match.input) : null;
+}

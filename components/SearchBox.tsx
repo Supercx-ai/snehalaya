@@ -28,31 +28,40 @@ export default function SearchBox() {
   }, []);
 
   return (
-    <div ref={boxRef} style={{ position: "relative", flex: 1, maxWidth: 320 }}>
+    <div ref={boxRef} className="relative flex-1 min-w-0 max-w-[496px]">
       <form
         onSubmit={(e) => { e.preventDefault(); setOpen(false); router.push(`/search?q=${encodeURIComponent(q)}`); }}
+        className="flex items-center h-[48px] bg-white border border-border-strong rounded-md pl-4 pr-1"
       >
+        <Image src="/figma/icon-search.svg" alt="" width={18} height={18} className="shrink-0" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder="Search sarees…"
-          style={{ width: "100%", padding: "0.5rem 0.75rem", border: "1px solid #ccc", borderRadius: 8 }}
+          placeholder="Search for sarees, collections and more"
+          className="flex-1 min-w-0 border-0 outline-none px-3 text-md text-ink placeholder:text-ink-faint bg-transparent"
         />
+        <Link
+          href="/image-search"
+          className="flex items-center gap-1.5 shrink-0 border-l border-border pl-3 pr-2 py-3 text-base text-ink-muted whitespace-nowrap"
+        >
+          <Image src="/figma/icon-image-search.svg" alt="" width={16} height={16} />
+          Image Search
+        </Link>
       </form>
 
       {open && results.length > 0 && (
-        <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "#fff", border: "1px solid #eee", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,.1)", zIndex: 50 }}>
+        <div className="absolute top-[110%] left-0 right-0 bg-white border border-border rounded-md shadow-lg z-50">
           {results.map((p) => (
-            <Link key={p.id} href={`/products/${p.handle}`} onClick={() => setOpen(false)} style={{ display: "flex", gap: "0.5rem", padding: "0.5rem", textDecoration: "none", color: "inherit" }}>
-              {p.featuredImage && <Image src={p.featuredImage.url} alt="" width={40} height={40} style={{ borderRadius: 4, objectFit: "cover" }} />}
+            <Link key={p.id} href={`/products/${p.handle}`} onClick={() => setOpen(false)} className="flex gap-2 p-2 text-ink">
+              {p.featuredImage && <Image src={p.featuredImage.url} alt="" width={40} height={40} className="rounded object-cover" />}
               <div>
-                <div style={{ fontSize: "0.9rem" }}>{p.title}</div>
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>{p.priceRange.minVariantPrice.amount} {p.priceRange.minVariantPrice.currencyCode}</div>
+                <div className="text-md">{p.title}</div>
+                <div className="text-sm text-ink-secondary">{p.priceRange.minVariantPrice.amount} {p.priceRange.minVariantPrice.currencyCode}</div>
               </div>
             </Link>
           ))}
-          <Link href={`/search?q=${encodeURIComponent(q)}`} onClick={() => setOpen(false)} style={{ display: "block", padding: "0.5rem", textAlign: "center", fontSize: "0.85rem", borderTop: "1px solid #eee", textDecoration: "none", color: "#111" }}>
+          <Link href={`/search?q=${encodeURIComponent(q)}`} onClick={() => setOpen(false)} className="block p-2 text-center text-sm border-t border-border text-ink">
             See all results for "{q}"
           </Link>
         </div>

@@ -66,6 +66,8 @@ export type Product = {
   description: string;
   featuredImage: ImageT | null;
   priceRange: { minVariantPrice: Money };
+  compareAtPriceRange: { minVariantPrice: Money } | null;
+  weaveType: { value: string } | null;
   variants: { nodes: { id: string; availableForSale: boolean }[] };
 };
 // Custom fields the store owner is expected to add in Admin → Settings → Custom data →
@@ -116,6 +118,8 @@ const PRODUCT_FIELDS = `
   id handle title description
   featuredImage { url altText width height }
   priceRange { minVariantPrice { amount currencyCode } }
+  compareAtPriceRange { minVariantPrice { amount currencyCode } }
+  weaveType: metafield(namespace: "custom", key: "weave_type") { value }
   variants(first: 1) { nodes { id availableForSale } }
 `;
 const CART_FIELDS = `
@@ -141,6 +145,16 @@ export function getProductPrice(handle: string, country: CountryCode) {
     { handle },
     { cache: "no-store", country }
   ).then((d) => d.product?.priceRange.minVariantPrice ?? null);
+}
+
+// Fetch by numeric id (reconstructed as a full gid) — used to map image-search results
+// (which only know Shopify's numeric product id) back to a real product.
+export function getProductByGid(gid: string) {
+  return shopifyFetch<{ node: Product | null }>(
+    `query ByGid($id: ID!) { node(id: $id) { ... on Product { ${PRODUCT_FIELDS} } } }`,
+    { id: gid },
+    { tags: ["products"] }
+  ).then((d) => d.node);
 }
 
 // --- Products ---
@@ -295,6 +309,29 @@ export function getAnnouncementBar() {
     const map = Object.fromEntries(fields.map((f) => [f.key, f.value]));
     return { message: map.message ?? null, link: map.link ?? null };
   });
+}
+
+// --- Category metafield facets (Color, Fabric — not tags) ---
+export type ColorFilterValue = { label: string; count: number; input: string };
+
+// Discovers a live Category-metafield facet (Color, Fabric, ...) — configured as a filter
+// in Search & Discovery — real values currently in use, each with Shopify's exact filter
+// input (a taxonomyMetafield reference). A value only appears once at least one product
+// has it set — that's how Shopify's faceting works, not a bug on our end.
+function getTaxonomyFilterValues(filterId: string) {
+  return shopifyFetch<{ search: { productFilters: ProductFilter[] } }>(
+    `{ search(query: "", types: [PRODUCT], first: 1) { productFilters { id label values { label count input } } } }`,
+    {},
+    { tags: ["products"] }
+  ).then((d) => d.search.productFilters.find((f) => f.id === filterId)?.values ?? []);
+}
+
+export function getColorFilterValues() {
+  return getTaxonomyFilterValues("filter.v.t.shopify.color-pattern");
+}
+
+export function getFabricFilterValues() {
+  return getTaxonomyFilterValues("filter.v.t.shopify.fabric");
 }
 
 // --- Search ---

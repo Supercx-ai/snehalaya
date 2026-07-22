@@ -9,7 +9,9 @@ const DEFAULT_COUNTRY = "IN";
 // Product/collection pages are ISR-cached, so the server-rendered price is always the
 // default currency. Swaps in the selected currency's price after mount — the cached
 // HTML itself doesn't change, only what this one component displays.
-export default function LocalizedPrice({ handle, amount, currencyCode }: { handle: string; amount: string; currencyCode: string }) {
+export default function LocalizedPrice({
+  handle, amount, currencyCode, format = "raw",
+}: { handle: string; amount: string; currencyCode: string; format?: "raw" | "currency" }) {
   const { country } = useCart();
   const [price, setPrice] = useState({ amount, currencyCode });
 
@@ -20,5 +22,8 @@ export default function LocalizedPrice({ handle, amount, currencyCode }: { handl
     return () => { cancelled = true; };
   }, [country, handle, amount, currencyCode]);
 
+  if (format === "currency") {
+    return <>{new Intl.NumberFormat("en-IN", { style: "currency", currency: price.currencyCode, maximumFractionDigits: 0 }).format(Number(price.amount))}</>;
+  }
   return <>{price.amount} {price.currencyCode}</>;
 }

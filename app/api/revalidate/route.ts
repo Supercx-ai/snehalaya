@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { revalidateTag, revalidatePath } from "next/cache";
+import { indexProduct, removeProduct, visionSearchConfigured } from "@/lib/visionSearch";
 
 // Shopify webhooks → verify HMAC → bust exactly the cached data that changed.
 // Register these topics in Admin → Settings → Notifications → Webhooks, all pointing
@@ -20,11 +21,27 @@ export async function POST(req: Request) {
   }
 
   const topic = req.headers.get("x-shopify-topic") ?? "";
-  const handle = (JSON.parse(body) as { handle?: string }).handle;
+  const payload = JSON.parse(body) as { id?: number; handle?: string; title?: string; images?: { src: string }[] };
+  const handle = payload.handle;
 
   if (topic.startsWith("products/")) {
     revalidateTag("products");
     if (handle) { revalidateTag(`product:${handle}`); revalidatePath(`/products/${handle}`); }
+
+    // Keep the image-search index in sync. Runs inline (blocks the webhook response) —
+    // ponytail: fine for now at low volume, but at 40k-product production scale this
+    // should move to a queue so slow Vision/GCS calls don't risk Shopify retrying the
+    // webhook as "failed" just because indexing took a few extra seconds.
+    if (visionSearchConfigured && payload.id) {
+      const gid = `gid://shopify/Product/${payload.id}`;
+      if (topic === "products/delete") {
+        await removeProduct(gid).catch((e) => console.error("Vision removeProduct failed:", e));
+      } else if (payload.title && payload.images?.[0]?.src) {
+        await indexProduct({ id: gid, title: payload.title, imageUrl: payload.images[0].src }).catch((e) =>
+          console.error("Vision indexProduct failed:", e)
+        );
+      }
+    }
   } else if (topic.startsWith("collections/")) {
     revalidateTag("collections");
     if (handle) { revalidateTag(`collection:${handle}`); revalidatePath(`/collections/${handle}`); }
