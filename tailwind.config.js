@@ -6,6 +6,9 @@ module.exports = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      screens: {
+        xs: "400px", // narrow-phone breakpoint — lets a couple of components fit 2-up before Tailwind's default sm (640px)
+      },
       colors: {
         primary: { DEFAULT: "#6f1e60" }, // "Find a store" active state — header, node 0:36
         accent: { DEFAULT: "#b89552" }, // active nav / INR pill border — header, node 0:9, 0:48
@@ -48,6 +51,8 @@ module.exports = {
         title: "30px", // selected-summary title ("Kanjivaram · Red") — find-saree, node 0:902
         "heading-xl": "50px", // "Find Your Saree" heading — find-saree, node 0:855
         "heading-lg": "55px", // section heading ("New Arrivals", "Have a saree in mind?") — new-arrivals, node 0:276
+        "heading-md": "40px", // brand ambassador heading — ambassador, node 0:847
+        "heading-sm": "30px", // confirmed mobile size for every section heading — mobile frame, nodes 0:3215/3269/3407/3482/3499/3574/3671/3879 etc.
         label: "9px", // product-card fabric/weave micro-label — new-arrivals, node 0:299
         "card-title": "17px", // product-card title (Cormorant) — new-arrivals, node 0:300
       },

@@ -6,24 +6,32 @@ import Link from "next/link";
 // Fabric-taxonomy or collection match exists for them (Fabric means material: Cork/
 // Cotton/Denim/Silk), so each card falls back to free-text /search, same as the header.
 const WEAVES = [
-  { label: "Linen", image: "/figma/weaves/linen.png", from: "rgba(220,43,62,0.55)", to: "rgba(103,17,26,0.55)" },
-  { label: "Kanchipuram Silk", image: "/figma/weaves/kanchipuram.png", from: "rgba(255,226,148,0.55)", to: "rgba(255,174,0,0.55)" },
-  { label: "Banarasi", image: "/figma/weaves/banarasi.png", from: "rgba(12,200,127,0.55)", to: "rgba(29,34,30,0.55)" },
-  { label: "Kota", image: "/figma/weaves/kota.png", from: "rgba(0,216,255,0.55)", to: "rgba(30,76,93,0.55)" },
-  { label: "Chettinad Cotton", image: "/figma/weaves/chettinad.png", from: "rgba(229,126,210,0.55)", to: "rgba(111,30,96,0.55)" },
-  { label: "Tussara", image: "/figma/weaves/tussara.png", from: "rgba(241,142,105,0.55)", to: "rgba(131,78,70,0.55)" },
+  { label: "Linen", image: "/figma/weaves/linen.png", from: "rgb(220,43,62)", to: "rgb(103,17,26)" },
+  { label: "Kanchipuram Silk", image: "/figma/weaves/kanchipuram.png", from: "rgb(255,226,148)", to: "rgb(255,174,0)" },
+  // ponytail: Figma's literal dark stop for Banarasi is near-black (29,34,30) — fine at the
+  // original 55%-alpha wash, but rendered flat it made the card fade to black. Swapped for a
+  // deep green so the card reads as green top-to-bottom, matching the intended look.
+  { label: "Banarasi", image: "/figma/weaves/banarasi.png", from: "rgb(12,200,127)", to: "rgb(11,90,63)" },
+  { label: "Kota", image: "/figma/weaves/kota.png", from: "rgb(0,216,255)", to: "rgb(30,76,93)" },
+  { label: "Chettinad Cotton", image: "/figma/weaves/chettinad.png", from: "rgb(229,126,210)", to: "rgb(111,30,96)" },
+  { label: "Tussara", image: "/figma/weaves/tussara.png", from: "rgb(241,142,105)", to: "rgb(131,78,70)" },
 ] as const;
 
 export default function ShopByWeave() {
   return (
-    <section className="max-w-[1280px] mx-auto px-8 py-12">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <section className="max-w-[1280px] mx-auto pl-4 md:px-8 py-12">
+      {/* Mobile Figma keeps this as a horizontal-scroll strip, not a stacked grid — it
+          only becomes a grid from sm: up. */}
+      <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 overflow-x-auto sm:overflow-visible pb-2 pr-4 [scrollbar-width:none]">
         {WEAVES.map((w) => (
-          <Link key={w.label} href={`/search?q=${encodeURIComponent(w.label)}`} className="block">
-            <div className="relative aspect-[168/226] rounded-lg overflow-hidden">
-              <Image src={w.image} alt={w.label} fill className="object-cover" />
-              <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${w.from}, ${w.to})` }} />
-              <div className="absolute inset-[8px] rounded-md border border-white" />
+          <Link key={w.label} href={`/search?q=${encodeURIComponent(w.label)}`} className="block w-[108px] shrink-0 sm:w-auto">
+            <div className="relative aspect-[168/226]">
+              {/* Solid gradient frame — the real photo sits on top, sharp and untinted,
+                  inset evenly on all sides so the gradient shows as a uniform border. */}
+              <div className="absolute inset-0 rounded-lg" style={{ background: `linear-gradient(to bottom, ${w.from}, ${w.to})` }} />
+              <div className="absolute inset-3 rounded-md overflow-hidden border-2 border-white">
+                <Image src={w.image} alt={w.label} fill className="object-cover" />
+              </div>
             </div>
             <p className="mt-3 text-center text-lg text-ink">{w.label}</p>
           </Link>

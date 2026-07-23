@@ -30,6 +30,24 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
   const fabricLabel = fabricSlug === null ? "All fabrics" : fabrics.find((f) => slugifyColour(f.label) === fabricSlug)?.label;
   const colourLabel = colourSlug === null ? null : colours.find((c) => slugifyColour(c.label) === colourSlug)?.label;
 
+  // Dynamic: follows the current fabric/colour/price selection, using the first matching
+  // product's photo (falls back to the static shot while that fetch is still pending).
+  const photoPanel = (
+    <div className="relative w-full h-[190px] md:h-auto md:w-[409px] md:aspect-[409/428] rounded-lg overflow-hidden border border-white shadow-[0_0_0_1px_theme(colors.border.strong)]">
+      <Image
+        src={preview?.url ?? "/figma/find/hero-photo.png"}
+        alt={preview?.altText ?? `${fabricLabel ?? "Saree"} collection`}
+        fill
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent from-35% to-primary/90 to-55%" />
+      <div className="absolute inset-y-0 left-[42%] right-0 flex flex-col items-center justify-center text-center font-display text-white px-2">
+        <span className="block text-lg md:text-title leading-tight">{fabricSlug ? `${fabricLabel} Saree` : "Saree"}</span>
+        <span className="block text-3xl md:text-heading-xl leading-tight">Collection</span>
+      </div>
+    </div>
+  );
+
   function viewSarees() {
     const params = new URLSearchParams();
     if (fabricSlug) params.set("fabric", fabricSlug);
@@ -44,15 +62,17 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
       <Image src="/figma/find/border.png" alt="" width={1280} height={49} className="w-full h-auto" />
       <Image src="/figma/find/backdrop-texture.png" alt="" fill className="absolute inset-0 object-cover -z-10" />
 
-      <div className="relative max-w-[1280px] mx-auto px-9 py-12 grid md:grid-cols-[1fr_409px] gap-10 items-start">
+      <div className="relative max-w-[1280px] mx-auto px-4 md:px-9 py-12 grid grid-cols-1 md:grid-cols-[1fr_409px] gap-8 md:gap-10 items-start">
         <div>
-          <h2 className="font-display font-light text-heading-xl text-primary">Find Your Saree</h2>
-          <p className="mt-1 text-base text-ink-subtle">Choose a fabric and a colour — we&apos;ll narrow the collection to match.</p>
+          <h2 className="font-display font-light text-heading-sm md:text-heading-xl text-ink">Find Your Saree</h2>
+          <p className="mt-1 text-base text-ink-subtle">Choose a weave and a colour — we&apos;ll narrow the collection to match.</p>
 
+          {/* Mobile Figma keeps every pill/swatch row as a horizontal-scroll strip, same
+              as the card carousels elsewhere — it only wraps from md: up. */}
           {fabrics.length > 0 && (
             <div className="mt-8">
-              <div className="text-xs tracking-wide2 text-ink uppercase">Fabric / Weave</div>
-              <div className="mt-3 flex gap-2 flex-wrap">
+              <div className="text-xs tracking-wide2 text-ink">Fabric / Weave</div>
+              <div className="mt-3 flex gap-2 flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible pb-1 [scrollbar-width:none]">
                 <Pill active={fabricSlug === null} onClick={() => setFabricSlug(null)}>All</Pill>
                 {fabrics.map((f) => (
                   <Pill key={f.label} active={fabricSlug === slugifyColour(f.label)} onClick={() => setFabricSlug(slugifyColour(f.label))}>
@@ -63,9 +83,13 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
             </div>
           )}
 
+          {/* Mobile Figma places the photo panel right after Fabric/Weave, before Price
+              Range — desktop keeps it as the side column instead (rendered further down). */}
+          <div className="mt-6 md:hidden">{photoPanel}</div>
+
           <div className="mt-6">
-            <div className="text-xs tracking-wide2 text-ink uppercase">Price Range</div>
-            <div className="mt-3 flex gap-2 flex-wrap">
+            <div className="text-xs tracking-wide2 text-ink">Price Range</div>
+            <div className="mt-3 flex gap-2 flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible pb-1 [scrollbar-width:none]">
               {PRICE_RANGES.map((p, i) => (
                 <Pill key={p.label} active={priceIndex === i} accent onClick={() => setPriceIndex(i)}>{p.label}</Pill>
               ))}
@@ -74,8 +98,8 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
 
           {colours.length > 0 && (
             <div className="mt-6">
-              <div className="text-xs tracking-wide2 text-ink uppercase">Colour</div>
-              <div className="mt-3 flex gap-4 flex-wrap">
+              <div className="text-xs tracking-wide2 text-ink">Colour</div>
+              <div className="mt-3 flex gap-4 flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible py-1.5 [scrollbar-width:none]">
                 <Swatch active={colourSlug === null} label="All" onClick={() => setColourSlug(null)} swatch="#fff" />
                 {colours.map((c) => (
                   <Swatch
@@ -92,12 +116,12 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
 
           <div className="mt-8 pt-6 border-t border-border-strong flex items-center justify-between gap-6 flex-wrap">
             <div className="flex items-center gap-4">
-              <div className="relative w-[157px] h-[91px] rounded-lg overflow-hidden bg-border-subtle shrink-0">
+              <div className="relative w-[130px] h-[93px] md:w-[157px] md:h-[91px] rounded-lg overflow-hidden bg-border-subtle shrink-0">
                 {preview && <Image src={preview.url} alt={preview.altText ?? ""} fill className="object-cover" />}
               </div>
               <div>
                 <span className="inline-block px-3 py-0.5 rounded-full bg-accent text-white text-tiny tracking-wide2 uppercase mb-2">Selected</span>
-                <p className="font-display text-title leading-tight">
+                <p className="font-display text-xl md:text-title leading-tight">
                   <span className="text-primary">{fabricLabel}</span>
                   {colourLabel && <span className="text-ink"> · {colourLabel}</span>}
                 </p>
@@ -106,19 +130,13 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
                 </p>
               </div>
             </div>
-            <button onClick={viewSarees} className="h-[52px] px-8 rounded-sm bg-primary text-cream text-xs font-medium">
+            <button onClick={viewSarees} className="h-[36px] px-5 text-2xs md:h-[52px] md:px-8 rounded-sm bg-primary text-cream md:text-xs font-medium">
               View Sarees
             </button>
           </div>
         </div>
 
-        <div className="relative hidden md:block h-[428px] rounded-lg overflow-hidden border border-white shadow-[0_0_0_1px_theme(colors.border.strong)]">
-          <Image src="/figma/find/hero-photo.png" alt="Kanjivaram saree collection" fill className="object-cover" />
-          <div className="absolute bottom-8 left-6 font-display text-white">
-            <span className="block text-title leading-tight">Kanjivaram Saree</span>
-            <span className="block text-heading-xl leading-tight">Collection</span>
-          </div>
-        </div>
+        <div className="hidden md:block">{photoPanel}</div>
       </div>
 
       <Image src="/figma/find/border.png" alt="" width={1280} height={49} className="w-full h-auto rotate-180" />
@@ -130,7 +148,7 @@ function Pill({ active, accent, onClick, children }: { active: boolean; accent?:
   return (
     <button
       onClick={onClick}
-      className={`h-[39px] px-5 rounded-full text-xs tracking-wide2 ${
+      className={`h-[39px] px-5 rounded-full text-xs tracking-wide2 shrink-0 whitespace-nowrap ${
         active ? `text-white ${accent ? "bg-accent" : "bg-primary"}` : "bg-white text-ink border border-border-strong"
       }`}
     >
@@ -141,12 +159,14 @@ function Pill({ active, accent, onClick, children }: { active: boolean; accent?:
 
 function Swatch({ active, label, swatch, onClick }: { active: boolean; label: string; swatch: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex flex-col items-center gap-2 w-[74px]" title={label}>
+    <button onClick={onClick} className="flex flex-col items-center gap-2 w-14 md:w-[74px] shrink-0" title={label}>
       <span
-        className={`relative block w-[74px] h-[74px] rounded-swatch overflow-hidden ${active ? "ring-2 ring-accent ring-offset-2" : "ring-1 ring-border-strong"}`}
+        className={`relative block w-14 h-14 md:w-[74px] md:h-[74px] rounded-swatch ${active ? "ring-2 ring-accent ring-offset-2" : "ring-1 ring-border-strong"}`}
         style={{ background: swatch }}
       >
-        <Image src="/figma/find/pattern-texture.png" alt="" fill className="object-cover opacity-20 mix-blend-overlay" />
+        <span className="absolute inset-0 rounded-swatch overflow-hidden">
+          <Image src="/figma/find/pattern-texture.png" alt="" fill className="object-cover opacity-20 mix-blend-overlay" />
+        </span>
       </span>
       <span className={`text-xs ${active ? "text-primary font-semibold" : "text-ink-secondary"}`}>{label}</span>
     </button>

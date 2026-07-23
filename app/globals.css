@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Safety net: a fixed-width element buried in a section shouldn't be able to force the
+   whole page to scroll sideways on narrow viewports. */
+html, body {
+  overflow-x: hidden;
+}

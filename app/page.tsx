@@ -1,9 +1,7 @@
-import { getProductsPage, getColorFilterValues, getFabricFilterValues, getCollection } from "@/lib/shopify";
-import Products from "@/components/Products";
+import { getColorFilterValues, getFabricFilterValues, getCollection } from "@/lib/shopify";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
 import InstagramFeed from "@/components/InstagramFeed";
 import BrandAmbassador from "@/components/BrandAmbassador";
-import ColourPicker from "@/components/ColourPicker";
 import SareeFinder from "@/components/SareeFinder";
 import Hero from "@/components/Hero";
 import ShopByWeave from "@/components/ShopByWeave";
@@ -17,13 +15,16 @@ import MaharaniPromo from "@/components/MaharaniPromo";
 import LiveShoppingPromo from "@/components/LiveShoppingPromo";
 import ShopTheLook from "@/components/ShopTheLook";
 import WornAndLoved from "@/components/WornAndLoved";
+import FeaturedIn from "@/components/FeaturedIn";
+import OurStores from "@/components/OurStores";
+import TrustStats from "@/components/TrustStats";
+import Newsletter from "@/components/Newsletter";
 
 export const revalidate = 600; // ISR: rebuild at most every 10 min; webhook busts it sooner
 
 export default async function Home() {
   // One round-trip each, in parallel.
-  const [firstPage, colours, fabrics, newArrivals, trending, snehasPicks] = await Promise.all([
-    getProductsPage(12),
+  const [colours, fabrics, newArrivals, trending, snehasPicks] = await Promise.all([
     getColorFilterValues(),
     getFabricFilterValues(),
     getCollection("new-arrivals", { first: 10, sortKey: "CREATED", reverse: true }),
@@ -51,17 +52,11 @@ export default async function Home() {
       <ShopTheLook />
       <InstagramFeed />
       <WornAndLoved />
-
-      {colours.length > 0 && (
-        <section style={{ marginBottom: "3rem" }}>
-          <h2>Shop by colour</h2>
-          <ColourPicker colours={colours} />
-        </section>
-      )}
-
       <BrandAmbassador />
-
-      <Products initial={firstPage.nodes} cursor={firstPage.pageInfo.endCursor} hasNext={firstPage.pageInfo.hasNextPage} />
+      <FeaturedIn />
+      <OurStores />
+      <TrustStats />
+      <Newsletter />
 
       <WhatsAppCTA />
     </main>

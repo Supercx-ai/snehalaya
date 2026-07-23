@@ -6,8 +6,8 @@ import ReviewsWidget from "./ReviewsWidget";
 // the rest of the site's not-yet-configured integrations (WhatsApp, Instagram).
 export default function WornAndLoved() {
   return (
-    <section className="max-w-[1280px] mx-auto px-9 py-12 text-center">
-      <h2 className="font-display font-light text-heading-xl text-ink">Worn &amp; Loved by You</h2>
+    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-12 text-center">
+      <h2 className="font-display font-light text-heading-sm md:text-heading-xl text-ink">Worn &amp; Loved by You</h2>
       <p className="mt-2 text-base text-ink-subtle">Real customers. Real celebrations.</p>
 
       <div className="mt-10 text-left" id="judgeme-reviews">

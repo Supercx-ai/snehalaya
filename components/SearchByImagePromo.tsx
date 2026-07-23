@@ -7,11 +7,11 @@ import ProductCard from "./ProductCard";
 // Pinecone) rather than re-implementing an upload widget inline.
 export default function SearchByImagePromo({ products }: { products: Product[] }) {
   return (
-    <section className="max-w-[1280px] mx-auto px-9 py-8">
-      <div className="relative rounded-lg overflow-hidden px-14 py-16 grid md:grid-cols-[1fr_auto] gap-10 items-center">
+    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-8">
+      <div className="relative rounded-lg overflow-hidden px-6 py-10 md:px-14 md:py-16 grid md:grid-cols-[1fr_auto] gap-10 items-center">
         <Image src="/figma/promo/card-texture.png" alt="" fill className="absolute inset-0 object-cover -z-10" />
         <div className="relative">
-          <h2 className="font-display font-light text-heading-lg text-white leading-tight">Have a saree in mind?</h2>
+          <h2 className="font-display font-light text-heading-sm md:text-heading-lg text-white leading-tight">Have a saree in mind?</h2>
           <p className="mt-4 max-w-[500px] text-base text-white/90 leading-relaxed">
             Upload a photo, screenshot or inspiration image and we&apos;ll find similar sarees in our catalogue — by colour, pattern, border or overall look.
           </p>
@@ -33,10 +33,10 @@ export default function SearchByImagePromo({ products }: { products: Product[] }
         </div>
 
         {products.length > 0 && (
-          <div className="hidden md:flex gap-4">
+          <div className="grid grid-cols-2 gap-3 md:flex md:gap-4">
             {products.slice(0, 2).map((p) => (
-              <div key={p.id} className="bg-white rounded-lg p-3">
-                <ProductCard product={p} showNewBadge />
+              <div key={p.id} className="bg-white rounded-lg p-2 md:p-3">
+                <ProductCard product={p} showNewBadge fluid />
               </div>
             ))}
           </div>

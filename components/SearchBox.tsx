@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { instantSearch } from "@/lib/search";
 import type { Product } from "@/lib/shopify";
 
-export default function SearchBox() {
+export default function SearchBox({ bare }: { bare?: boolean } = {}) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Product[]>([]);
   const [open, setOpen] = useState(false);
@@ -31,22 +31,23 @@ export default function SearchBox() {
     <div ref={boxRef} className="relative flex-1 min-w-0 max-w-[496px]">
       <form
         onSubmit={(e) => { e.preventDefault(); setOpen(false); router.push(`/search?q=${encodeURIComponent(q)}`); }}
-        className="flex items-center h-[48px] bg-white border border-border-strong rounded-md pl-4 pr-1"
+        className={`flex items-center h-[48px] pl-4 pr-1 ${bare ? "" : "bg-white border border-border-strong rounded-md"}`}
       >
         <Image src="/figma/icon-search.svg" alt="" width={18} height={18} className="shrink-0" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder="Search for sarees, collections and more"
+          placeholder="Search for sarees…"
           className="flex-1 min-w-0 border-0 outline-none px-3 text-md text-ink placeholder:text-ink-faint bg-transparent"
         />
         <Link
           href="/image-search"
+          aria-label="Image Search"
           className="flex items-center gap-1.5 shrink-0 border-l border-border pl-3 pr-2 py-3 text-base text-ink-muted whitespace-nowrap"
         >
           <Image src="/figma/icon-image-search.svg" alt="" width={16} height={16} />
-          Image Search
+          <span>Image Search</span>
         </Link>
       </form>
 

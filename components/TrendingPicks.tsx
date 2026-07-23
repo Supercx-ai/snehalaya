@@ -12,8 +12,8 @@ export default function TrendingPicks({ trending, snehasPicks }: { trending: Pro
   if (trending.length === 0 && snehasPicks.length === 0) return null;
 
   return (
-    <section className="max-w-[1280px] mx-auto px-9 py-16">
-      <h2 className="text-center font-display font-light text-heading-xl text-ink">Trending &amp; Sneha&apos;s Picks</h2>
+    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-16">
+      <h2 className="text-center font-display font-light text-heading-sm md:text-heading-xl text-ink">Trending &amp; Sneha&apos;s Picks</h2>
 
       <div className="mt-6 flex justify-center">
         <div className="inline-flex bg-border-subtle rounded-full p-1">

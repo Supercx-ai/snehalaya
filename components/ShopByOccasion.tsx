@@ -15,22 +15,28 @@ export default function ShopByOccasion() {
   const [large, ...small] = OCCASIONS;
 
   return (
-    <section className="max-w-[1280px] mx-auto px-8 py-12">
-      <div className="flex items-start justify-between mb-8">
+    <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-12">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
         <div>
-          <h2 className="font-display font-light text-8xl text-ink">Shop by Occasion</h2>
+          <h2 className="font-display font-light text-heading-sm md:text-8xl text-ink">Shop by Occasion</h2>
           <p className="mt-2 text-base text-ink-secondary">Every celebration has its saree. Find yours by the moment.</p>
         </div>
-        <Link href="/collections" className="flex items-center justify-center h-[41px] px-8 rounded-sm bg-primary text-cream text-2xs font-semibold tracking-wide2 uppercase whitespace-nowrap">
+        <Link href="/collections" className="hidden md:flex items-center justify-center h-[41px] px-8 rounded-sm bg-primary text-cream text-2xs font-semibold tracking-wide2 uppercase whitespace-nowrap self-start">
           Explore Collection
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <OccasionCard {...large} className="md:row-span-2 aspect-[601/463] md:aspect-auto" />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <OccasionCard {...large} className="col-span-2 md:col-span-1 md:row-span-2 aspect-[3/2] md:aspect-auto" />
         {small.map((o) => (
           <OccasionCard key={o.label} {...o} className="aspect-[293/223]" />
         ))}
+      </div>
+
+      <div className="md:hidden text-center mt-8">
+        <Link href="/collections" className="inline-flex items-center justify-center h-[41px] px-8 rounded-sm bg-primary text-cream text-2xs font-semibold tracking-wide2 uppercase">
+          Explore Collection
+        </Link>
       </div>
     </section>
   );
@@ -44,7 +50,7 @@ function OccasionCard({
       <Image src={image} alt={label} fill className="object-cover" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
       <div className="absolute bottom-6 left-5 right-5">
-        <p className={`font-display text-sand ${size === "large" ? "text-7xl leading-tight" : "text-3xl"}`}>{label}</p>
+        <p className={`font-display text-sand ${size === "large" ? "text-4xl md:text-7xl leading-tight" : "text-xl md:text-3xl"}`}>{label}</p>
         <p className="mt-1 text-2xs tracking-wide2 text-sand">{caption}</p>
       </div>
     </Link>

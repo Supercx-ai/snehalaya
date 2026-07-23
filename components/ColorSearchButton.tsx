@@ -5,7 +5,7 @@ import Link from "next/link";
 import { slugifyColour, colourSwatch } from "@/lib/colours";
 import type { ColorFilterValue } from "@/lib/shopify";
 
-export default function ColorSearchButton({ colours }: { colours: ColorFilterValue[] }) {
+export default function ColorSearchButton({ colours, bare }: { colours: ColorFilterValue[]; bare?: boolean }) {
   const [open, setOpen] = useState(false);
   if (colours.length === 0) return null;
 
@@ -13,7 +13,7 @@ export default function ColorSearchButton({ colours }: { colours: ColorFilterVal
     <div className="relative shrink-0">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center h-[48px] bg-white border border-border-strong rounded-md pl-4 pr-4 gap-3"
+        className={`flex items-center h-[48px] pl-4 pr-4 gap-3 ${bare ? "border-l border-border" : "bg-white border border-border-strong rounded-md"}`}
       >
         <span className="flex">
           {colours.slice(0, 4).map((c, i) => (

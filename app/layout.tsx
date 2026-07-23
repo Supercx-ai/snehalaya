@@ -14,6 +14,8 @@ import SearchBox from "@/components/SearchBox";
 import ColorSearchButton from "@/components/ColorSearchButton";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import CurrencySelector from "@/components/CurrencySelector";
+import MobileNav from "@/components/MobileNav";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 // Weights confirmed from the Figma header pull: Regular(400)/Medium(500)/SemiBold(600).
@@ -56,23 +58,34 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <AnnouncementBar />
 
           <header className="bg-cream border-b border-border">
-            <div className="mx-auto max-w-[1280px] flex items-center gap-6 px-8 py-[10px]">
-              <Link href="/" className="shrink-0">
-                <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={126} height={42} priority className="h-[42px] w-auto" />
+            {/* Mobile: hamburger / logo / icons — the classic 1fr-auto-1fr grid keeps the
+                logo genuinely centered even though the hamburger (20px) and icon cluster
+                (84px) are different widths; desktop reverts to a plain flex row. */}
+            <div className="mx-auto max-w-[1280px] grid grid-cols-[1fr_auto_1fr] md:flex items-center gap-3 md:gap-6 px-4 md:px-8 py-[10px]">
+              <MobileNav nav={NAV} initialCountry={country} />
+
+              <Link href="/" className="shrink-0 justify-self-center md:justify-self-auto">
+                <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={126} height={42} priority className="h-[48px] md:h-[42px] w-auto" />
               </Link>
 
-              <CurrencySelector initialCountry={country} />
+              <div className="hidden md:block">
+                <CurrencySelector initialCountry={country} />
+              </div>
 
-              <SearchBox />
+              <div className="hidden md:block flex-1 min-w-0">
+                <SearchBox />
+              </div>
 
-              <ColorSearchButton colours={colours} />
+              <div className="hidden md:block">
+                <ColorSearchButton colours={colours} />
+              </div>
 
-              <Link href="/store-locator" className="flex items-center gap-1.5 text-base font-medium text-primary whitespace-nowrap">
+              <Link href="/store-locator" className="hidden md:flex items-center gap-1.5 text-base font-medium text-primary whitespace-nowrap">
                 <Image src="/figma/icon-store.svg" alt="" width={16} height={16} />
                 Find a store
               </Link>
 
-              <div className="flex items-center gap-4 ml-auto">
+              <div className="flex items-center gap-3 md:gap-4 justify-self-end md:justify-self-auto md:ml-auto shrink-0">
                 <Link href="/account" aria-label="Account">
                   <Image src="/figma/icon-account.svg" alt="" width={20} height={20} />
                 </Link>
@@ -83,8 +96,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </div>
             </div>
 
-            <nav className="border-t border-border-subtle overflow-x-auto">
-              <div className="mx-auto max-w-[1280px] flex gap-8 px-8 py-3 text-base whitespace-nowrap">
+            {/* Mobile Figma shows search / image search / colour search as ONE continuous
+                bar (not separate boxes) in its own row beneath the logo/icons row. */}
+            <div className="md:hidden px-4 pb-3">
+              <div className="flex items-center h-[48px] bg-white border border-border-strong rounded-md">
+                <SearchBox bare />
+                <ColorSearchButton colours={colours} bare />
+              </div>
+            </div>
+
+            <nav className="hidden md:block border-t border-border-subtle overflow-x-auto">
+              <div className="mx-auto max-w-[1280px] flex gap-6 md:gap-8 px-4 md:px-8 py-3 text-base whitespace-nowrap">
                 {NAV.map((item, i) => (
                   <Link
                     key={item.label}
@@ -103,6 +125,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </header>
 
           {children}
+          <Footer />
           <CartDrawer />
         </CartProvider>
       </body>
