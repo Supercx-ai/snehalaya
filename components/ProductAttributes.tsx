@@ -25,48 +25,51 @@ export default function ProductAttributes({ metafields }: { metafields: ProductM
   if (rows.length === 0 && !isSilk && !hasGI && !metafields.craft_story && !metafields.care_instructions) return null;
 
   return (
-    <div style={{ marginTop: "1rem" }}>
-      {(isSilk || hasGI) && (
-        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
-          {isSilk && <Badge color="#7a5c00" bg="#fff3cd">Silk Mark Certified</Badge>}
-          {hasGI && <Badge color="#0a5c36" bg="#d4f4e2">GI Tagged</Badge>}
-        </div>
-      )}
+    <details className="group border-t border-border-strong py-4">
+      <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-ink">
+        Product Details
+        <span className="text-ink-faint transition-transform group-open:rotate-180">⌄</span>
+      </summary>
 
-      {rows.length > 0 && (
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.key} style={{ borderBottom: "1px solid #eee" }}>
-                <td style={{ padding: "0.4rem 0.5rem 0.4rem 0", color: "#888", width: "40%" }}>{r.label}</td>
-                <td style={{ padding: "0.4rem 0" }}>{metafields[r.key]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <div className="mt-4">
+        {(isSilk || hasGI) && (
+          <div className="flex gap-2 mb-3">
+            {isSilk && <Badge className="bg-[#fff3cd] text-[#7a5c00]">Silk Mark Certified</Badge>}
+            {hasGI && <Badge className="bg-[#d4f4e2] text-[#0a5c36]">GI Tagged</Badge>}
+          </div>
+        )}
 
-      {metafields.craft_story && (
-        <div style={{ marginTop: "1rem" }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "0.25rem" }}>The craft</h3>
-          <p style={{ color: "#444", lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap" }}>{metafields.craft_story}</p>
-        </div>
-      )}
+        {rows.length > 0 && (
+          <table className="w-full border-collapse text-sm">
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.key} className="border-b border-border-subtle">
+                  <td className="py-2 pr-2 text-ink-faint w-2/5">{r.label}</td>
+                  <td className="py-2 text-ink">{metafields[r.key]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
 
-      {metafields.care_instructions && (
-        <details style={{ marginTop: "1rem" }}>
-          <summary style={{ cursor: "pointer", fontWeight: 600 }}>Care instructions</summary>
-          <p style={{ color: "#444", lineHeight: 1.6 }}>{metafields.care_instructions}</p>
-        </details>
-      )}
-    </div>
+        {metafields.craft_story && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium text-ink mb-1">The craft</h3>
+            <p className="text-sm text-ink-subtle leading-relaxed whitespace-pre-wrap">{metafields.craft_story}</p>
+          </div>
+        )}
+
+        {metafields.care_instructions && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium text-ink mb-1">Care instructions</h3>
+            <p className="text-sm text-ink-subtle leading-relaxed">{metafields.care_instructions}</p>
+          </div>
+        )}
+      </div>
+    </details>
   );
 }
 
-function Badge({ children, color, bg }: { children: React.ReactNode; color: string; bg: string }) {
-  return (
-    <span style={{ display: "inline-block", padding: "0.2rem 0.6rem", borderRadius: 999, background: bg, color, fontSize: "0.8rem", fontWeight: 600 }}>
-      {children}
-    </span>
-  );
+function Badge({ children, className }: { children: React.ReactNode; className: string }) {
+  return <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${className}`}>{children}</span>;
 }

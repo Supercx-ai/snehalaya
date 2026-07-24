@@ -29,7 +29,7 @@ export default async function Home() {
     getFabricFilterValues(),
     getCollection("new-arrivals", { first: 10, sortKey: "CREATED", reverse: true }),
     getCollection("new-arrivals", { first: 8, sortKey: "BEST_SELLING" }),
-    getCollection("maharani-exclusive", { first: 8 }),
+    getCollection("festival-occasion", { first: 8 }),
   ]);
   const newArrivalProducts = newArrivals?.products.nodes ?? [];
   // Show 2 different products in the promo card when the catalogue is large enough;

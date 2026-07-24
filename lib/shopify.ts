@@ -69,6 +69,7 @@ export type Product = {
   compareAtPriceRange: { minVariantPrice: Money } | null;
   weaveType: { value: string } | null;
   variants: { nodes: { id: string; availableForSale: boolean }[] };
+  tags: string[];
 };
 // Custom fields the store owner is expected to add in Admin → Settings → Custom data →
 // Products, marked Storefront-visible. All optional — missing keys just render nothing.
@@ -81,10 +82,20 @@ export const METAFIELD_KEYS = [
 export type MetafieldKey = (typeof METAFIELD_KEYS)[number];
 export type ProductMetafields = Partial<Record<MetafieldKey, string>>;
 
+export type ProductVariant = {
+  id: string;
+  title: string;
+  availableForSale: boolean;
+  price: Money;
+  selectedOptions: { name: string; value: string }[];
+};
+export type ProductOption = { name: string; optionValues: { name: string }[] };
+
 export type ProductDetail = Product & {
-  tags: string[];
   images: { nodes: ImageT[] };
   metafields: ProductMetafields;
+  options: ProductOption[];
+  allVariants: ProductVariant[];
 };
 export type Collection = {
   id: string;
@@ -121,6 +132,7 @@ const PRODUCT_FIELDS = `
   compareAtPriceRange { minVariantPrice { amount currencyCode } }
   weaveType: metafield(namespace: "custom", key: "weave_type") { value }
   variants(first: 1) { nodes { id availableForSale } }
+  tags
 `;
 const CART_FIELDS = `
   id checkoutUrl totalQuantity
@@ -206,13 +218,25 @@ export function getProductsByQuery(query: string, opts: { first?: number; after?
 
 export function getProduct(handle: string) {
   return shopifyFetch<{
-    product: (Product & { tags: string[]; images: { nodes: ImageT[] }; metafields: ({ key: string; value: string } | null)[] }) | null;
+    product:
+      | (Product & {
+          images: { nodes: ImageT[] };
+          metafields: ({ key: string; value: string } | null)[];
+          options: ProductOption[];
+          allVariants: { nodes: ProductVariant[] };
+        })
+      | null;
   }>(
+    // aliased `allVariants` sits alongside the fragment's own `variants(first: 1)` (used
+    // by list views) — this is the full set, with price/options, for the variant switcher.
     `query Product($handle: String!) { product(handle: $handle) {
       ${PRODUCT_FIELDS}
-      tags
       images(first: 8) { nodes { url altText width height } }
       metafields(identifiers: [${METAFIELD_IDENTIFIERS}]) { key value }
+      options { name optionValues { name } }
+      allVariants: variants(first: 25) {
+        nodes { id title availableForSale price { amount currencyCode } selectedOptions { name value } }
+      }
     } }`,
     { handle },
     { tags: ["products", `product:${handle}`] }
@@ -220,7 +244,7 @@ export function getProduct(handle: string) {
     if (!d.product) return null;
     const metafields: ProductMetafields = {};
     for (const m of d.product.metafields) if (m) metafields[m.key as MetafieldKey] = m.value;
-    return { ...d.product, metafields };
+    return { ...d.product, metafields, allVariants: d.product.allVariants.nodes };
   });
 }
 

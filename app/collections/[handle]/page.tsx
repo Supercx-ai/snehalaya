@@ -1,10 +1,14 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getCollection, getCollections } from "@/lib/shopify";
 import { loadMoreCollectionProducts } from "@/lib/collection";
 import { generateCollectionStructuredData, generateBreadcrumbStructuredData } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
 import InfiniteProducts from "@/components/InfiniteProducts";
+import CollectionSidebar from "@/components/CollectionSidebar";
+import SortSelect from "@/components/SortSelect";
+import FilterForm from "@/components/FilterForm";
 
 export const revalidate = 3600; // ISR: rebuild at most hourly; product-update webhook busts it sooner
 
@@ -52,6 +56,13 @@ export default async function CollectionPage({
   const { nodes, filters: availableFilters, pageInfo } = collection.products;
   const url = `${SITE_URL}/collections/${handle}`;
 
+  // Carries the current filter/price selection into SortSelect so a sort change
+  // re-navigates without dropping whatever's already applied.
+  const baseQuery = new URLSearchParams();
+  selectedInputs.forEach((f) => baseQuery.append("f", f));
+  if (sp.minPrice) baseQuery.set("minPrice", sp.minPrice);
+  if (sp.maxPrice) baseQuery.set("maxPrice", sp.maxPrice);
+
   return (
     <>
     <JsonLd
@@ -63,57 +74,43 @@ export default async function CollectionPage({
         ]),
       ]}
     />
-    <main>
-      <h1 style={{ marginTop: 0 }}>{collection.title}</h1>
-      {collection.description && <p style={{ color: "#555" }}>{collection.description}</p>}
+    <main className="bg-white">
+      <div className="max-w-[1280px] mx-auto px-4 md:px-9 py-8">
+        <nav className="flex items-center gap-1.5 text-xs text-ink-faint">
+          <Link href="/" className="hover:text-ink">Home</Link>
+          <span>/</span>
+          <span className="text-ink-secondary">{collection.title}</span>
+        </nav>
 
-      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "2rem", alignItems: "start" }}>
-        <form method="get" style={{ display: "grid", gap: "1.5rem" }}>
-          <div>
-            <label style={{ display: "block", fontWeight: 600, marginBottom: "0.5rem" }}>Sort by</label>
-            <select name="sort" defaultValue={sp.sort ?? ""} style={{ width: "100%", padding: "0.4rem" }}>
-              <option value="">Featured</option>
-              {Object.entries(SORTS).map(([key, s]) => (
-                <option key={key} value={key}>{s.label}</option>
-              ))}
-            </select>
-          </div>
+        <h1 className="mt-3 font-display font-light text-heading-sm md:text-heading-lg text-ink">{collection.title}</h1>
+        {collection.description && <p className="mt-2 max-w-[720px] text-base text-ink-subtle">{collection.description}</p>}
 
-          <div>
-            <label style={{ display: "block", fontWeight: 600, marginBottom: "0.5rem" }}>Price</label>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <input name="minPrice" type="number" placeholder="Min" defaultValue={sp.minPrice} style={{ width: "50%", padding: "0.3rem" }} />
-              <input name="maxPrice" type="number" placeholder="Max" defaultValue={sp.maxPrice} style={{ width: "50%", padding: "0.3rem" }} />
+        <FilterForm basePath={`/collections/${handle}`} className="mt-8 flex flex-col md:flex-row gap-8 items-start">
+          <input type="hidden" name="sort" value={sp.sort ?? ""} />
+          <aside className="w-full md:w-[260px] shrink-0 md:sticky md:top-24">
+            <CollectionSidebar
+              filters={availableFilters}
+              selectedInputs={selectedInputs}
+              minPrice={sp.minPrice}
+              maxPrice={sp.maxPrice}
+            />
+          </aside>
+
+          <div className="flex-1 min-w-0 w-full">
+            <div className="flex justify-end mb-6">
+              <SortSelect basePath={`/collections/${handle}`} currentSort={sp.sort ?? ""} baseQuery={baseQuery.toString()} />
             </div>
+
+            <InfiniteProducts
+              key={handle + JSON.stringify(sp)}
+              resetKey={handle + JSON.stringify(sp)}
+              initial={nodes}
+              cursor={pageInfo.endCursor}
+              hasNext={pageInfo.hasNextPage}
+              loadMore={loadMoreCollectionProducts.bind(null, handle, filters, sort?.sortKey, sort?.reverse)}
+            />
           </div>
-
-          {availableFilters
-            .filter((f) => f.type === "LIST")
-            .map((f) => (
-              <div key={f.id}>
-                <label style={{ display: "block", fontWeight: 600, marginBottom: "0.5rem" }}>{f.label}</label>
-                {f.values.map((v) => (
-                  <label key={v.id} style={{ display: "flex", gap: "0.4rem", fontSize: "0.9rem", marginBottom: "0.25rem" }}>
-                    <input type="checkbox" name="f" value={v.input} defaultChecked={selectedInputs.includes(v.input)} />
-                    {v.label} ({v.count})
-                  </label>
-                ))}
-              </div>
-            ))}
-
-          <button type="submit" style={{ padding: "0.6rem", borderRadius: 8, border: "1px solid #111", background: "#111", color: "#fff", cursor: "pointer" }}>
-            Apply filters
-          </button>
-        </form>
-
-        <InfiniteProducts
-          key={handle + JSON.stringify(sp)}
-          resetKey={handle + JSON.stringify(sp)}
-          initial={nodes}
-          cursor={pageInfo.endCursor}
-          hasNext={pageInfo.hasNextPage}
-          loadMore={loadMoreCollectionProducts.bind(null, handle, filters, sort?.sortKey, sort?.reverse)}
-        />
+        </FilterForm>
       </div>
     </main>
     </>

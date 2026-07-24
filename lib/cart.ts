@@ -31,11 +31,11 @@ async function requireCartId() {
 
 // Add a variant. Creates a cart on first add; reuses it after.
 // If the stored cart is gone (expired/checked out), start a fresh one.
-export async function addToCart(merchandiseId: string) {
+export async function addToCart(merchandiseId: string, quantity = 1) {
   const jar = await cookies();
   const id = jar.get(COOKIE)?.value;
   const country = await getSelectedCountry();
-  const cart = (id && (await cartLinesAdd(id, merchandiseId, 1, country))) || (await cartCreate(merchandiseId, 1, country));
+  const cart = (id && (await cartLinesAdd(id, merchandiseId, quantity, country))) || (await cartCreate(merchandiseId, quantity, country));
   if (cart) jar.set(COOKIE, cart.id, { httpOnly: true, sameSite: "lax", path: "/" });
   revalidatePath("/cart");
   return cart;
@@ -76,7 +76,7 @@ export async function switchCurrency(country: CountryCode) {
 
 // Buy Now: a fresh single-item cart (ignores whatever's already in the visitor's cart),
 // straight to Shopify checkout.
-export async function buyNow(merchandiseId: string) {
-  const cart = await cartCreate(merchandiseId, 1, await getSelectedCountry());
+export async function buyNow(merchandiseId: string, quantity = 1) {
+  const cart = await cartCreate(merchandiseId, quantity, await getSelectedCountry());
   return cart?.checkoutUrl ?? null;
 }

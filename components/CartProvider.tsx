@@ -10,7 +10,7 @@ type CartContextValue = {
   open: boolean;
   setOpen: (open: boolean) => void;
   pending: boolean;
-  addLine: (merchandiseId: string) => void;
+  addLine: (merchandiseId: string, quantity?: number) => void;
   updateLine: (lineId: string, quantity: number) => void;
   removeLine: (lineId: string) => void;
   applyCode: (code: string) => Promise<boolean>;
@@ -39,8 +39,8 @@ export default function CartProvider({
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
 
-  const addLine = (merchandiseId: string) =>
-    start(async () => { setCart(await addToCart(merchandiseId)); setOpen(true); });
+  const addLine = (merchandiseId: string, quantity = 1) =>
+    start(async () => { setCart(await addToCart(merchandiseId, quantity)); setOpen(true); });
 
   const updateLine = (lineId: string, quantity: number) =>
     start(async () => { setCart(await updateCartLine(lineId, quantity)); });

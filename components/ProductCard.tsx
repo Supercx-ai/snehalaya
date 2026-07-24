@@ -7,14 +7,19 @@ import type { Product } from "@/lib/shopify";
 import WishlistHeart from "./WishlistHeart";
 import LocalizedPrice from "./LocalizedPrice";
 
-export default function ProductCard({ product: p, showNewBadge, fluid }: { product: Product; showNewBadge?: boolean; fluid?: boolean }) {
+export default function ProductCard({
+  product: p, showNewBadge, fluid, fullWidth,
+}: { product: Product; showNewBadge?: boolean; fluid?: boolean; fullWidth?: boolean }) {
   const router = useRouter();
   const compareAt = p.compareAtPriceRange?.minVariantPrice;
   const onSale = compareAt && Number(compareAt.amount) > Number(p.priceRange.minVariantPrice.amount);
   const similarQuery = p.weaveType?.value ?? p.title;
+  // fullWidth: sized entirely by the parent grid cell (e.g. a PLP grid) — never reverts to
+  // the fixed carousel width the way `fluid` does for the mobile-grid/desktop-scroller cases.
+  const widthClass = fullWidth ? "w-full" : fluid ? "w-full md:w-[264px] md:shrink-0" : "w-[264px] shrink-0";
 
   return (
-    <Link href={`/products/${p.handle}`} className={`group ${fluid ? "block w-full md:w-[264px] md:shrink-0" : "block w-[264px] shrink-0"}`}>
+    <Link href={`/products/${p.handle}`} className={`group block ${widthClass}`}>
       <div className="relative rounded-card overflow-hidden bg-border-subtle aspect-[264/352]">
         {p.featuredImage && (
           <Image src={p.featuredImage.url} alt={p.featuredImage.altText ?? p.title} fill className="object-cover" />

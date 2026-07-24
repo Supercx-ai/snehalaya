@@ -1,43 +1,41 @@
 "use client";
 
+import Image from "next/image";
 import { useCart } from "./CartProvider";
 import { gaEvent } from "@/lib/gtag";
 
 type Item = { id: string; title: string; amount: string; currencyCode: string };
 
-export default function AddToCart({ merchandiseId, soldOut, item }: { merchandiseId?: string; soldOut?: boolean; item?: Item }) {
+export default function AddToCart({
+  merchandiseId, soldOut, item, quantity = 1,
+}: { merchandiseId?: string; soldOut?: boolean; item?: Item; quantity?: number }) {
   const { addLine, pending } = useCart();
 
   if (!merchandiseId || soldOut) {
-    return <button disabled style={btn}>Sold out</button>;
+    return (
+      <button disabled className="h-12 px-8 rounded-sm bg-border-subtle text-ink-faint text-sm font-medium cursor-not-allowed">
+        Sold out
+      </button>
+    );
   }
 
   return (
     <button
       disabled={pending}
-      style={btn}
       onClick={() => {
-        addLine(merchandiseId);
+        addLine(merchandiseId, quantity);
         if (item) {
           gaEvent("add_to_cart", {
             currency: item.currencyCode,
-            value: Number(item.amount),
-            items: [{ item_id: item.id, item_name: item.title, price: Number(item.amount), quantity: 1 }],
+            value: Number(item.amount) * quantity,
+            items: [{ item_id: item.id, item_name: item.title, price: Number(item.amount), quantity }],
           });
         }
       }}
+      className="h-12 px-8 rounded-sm bg-primary text-cream text-sm font-medium tracking-wide2 uppercase disabled:opacity-60 flex items-center gap-2"
     >
-      {pending ? "Adding…" : "Add to cart"}
+      <Image src="/figma/icon-cart-white.svg" alt="" width={16} height={16} />
+      {pending ? "Adding…" : "Add To Cart"}
     </button>
   );
 }
-
-const btn: React.CSSProperties = {
-  padding: "0.75rem 1.5rem",
-  fontSize: "1rem",
-  border: "none",
-  borderRadius: 8,
-  background: "#111",
-  color: "#fff",
-  cursor: "pointer",
-};

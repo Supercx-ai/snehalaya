@@ -10,9 +10,10 @@ export default function ShareButton({ title }: { title: string }) {
         if (navigator.share) await navigator.share({ title, url });
         else { await navigator.clipboard.writeText(url); alert("Link copied"); }
       }}
-      style={{ padding: "0.5rem 1rem", borderRadius: 8, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
+      aria-label="Share"
+      className="w-11 h-11 rounded-md border border-border-strong bg-cream text-ink-secondary text-base shrink-0"
     >
-      Share
+      ↗
     </button>
   );
 }
