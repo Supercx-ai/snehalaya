@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 /* Safety net: a fixed-width element buried in a section shouldn't be able to force the
-   whole page to scroll sideways on narrow viewports. */
+   whole page to scroll sideways on narrow viewports.
+   `clip` (not `hidden`) so it doesn't create a scroll container — `hidden` would break
+   every `position: sticky` on the site (e.g. the product-page gallery). */
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }

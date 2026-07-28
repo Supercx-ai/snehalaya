@@ -32,7 +32,7 @@ export default function AddToCart({
           });
         }
       }}
-      className="h-12 px-8 rounded-sm bg-primary text-cream text-sm font-medium tracking-wide2 uppercase disabled:opacity-60 flex items-center gap-2"
+      className="h-12 px-8 rounded-sm bg-primary text-cream text-sm font-medium tracking-wide2 uppercase disabled:opacity-60 flex items-center justify-center gap-2"
     >
       <Image src="/figma/icon-cart-white.svg" alt="" width={16} height={16} />
       {pending ? "Adding…" : "Add To Cart"}

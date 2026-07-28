@@ -9,10 +9,10 @@ import ProductGallery from "@/components/ProductGallery";
 import ProductPurchaseBox from "@/components/ProductPurchaseBox";
 import WishlistButton from "@/components/WishlistButton";
 import ShareButton from "@/components/ShareButton";
-import SizeGuide from "@/components/SizeGuide";
 import ReviewsWidget from "@/components/ReviewsWidget";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
 import ProductAttributes from "@/components/ProductAttributes";
+import OffersBox from "@/components/OffersBox";
 import ShippingReturns from "@/components/ShippingReturns";
 import DeliveryEstimate from "@/components/DeliveryEstimate";
 import TrustBadges from "@/components/TrustBadges";
@@ -74,17 +74,24 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
         <nav className="flex items-center gap-1.5 text-xs text-ink-faint">
           <Link href="/" className="hover:text-ink">Home</Link>
           <span>/</span>
+          {/* ponytail: category path is a mockup — no collection hierarchy on the product yet */}
+          <span>Women</span>
+          <span>/</span>
+          <span>Sarees</span>
+          <span>/</span>
           <span className="text-ink-secondary">{product.title}</span>
         </nav>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-          <ProductGallery images={images} title={product.title} similarQuery={product.weaveType?.value ?? product.title} />
+          <div className="md:sticky md:top-6 self-start">
+            <ProductGallery images={images} title={product.title} similarQuery={product.weaveType?.value ?? product.title} />
+          </div>
 
           <div>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs tracking-wide2 text-accent uppercase">{product.weaveType?.value}</p>
-                <h1 className="mt-1 font-display font-light text-heading-sm md:text-heading-lg text-ink">{product.title}</h1>
+                <h1 className="mt-1 font-display font-light text-heading-sm md:text-heading-lg text-ink leading-tight">{product.title}</h1>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <ShareButton title={product.title} />
@@ -99,7 +106,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
                 />
               </div>
             </div>
-            <p className="mt-2 text-sm text-ink-subtle leading-relaxed">{product.description}</p>
+            <p className="mt-2 text-sm text-ink leading-relaxed">{product.description}</p>
 
             <div className="mt-6">
               <ProductPurchaseBox
@@ -114,15 +121,15 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
             <DeliveryEstimate shipDays={product.metafields.ship_days} />
 
-            <SizeGuide />
+            <div className="mt-6">
+              <TrustBadges />
+            </div>
+
+            <OffersBox />
 
             <div className="mt-6">
               <ProductAttributes metafields={product.metafields} />
               <ShippingReturns />
-            </div>
-
-            <div className="mt-6">
-              <TrustBadges />
             </div>
 
             <div className="mt-6">

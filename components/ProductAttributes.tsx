@@ -28,7 +28,9 @@ export default function ProductAttributes({ metafields }: { metafields: ProductM
     <details className="group border-t border-border-strong py-4">
       <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-ink">
         Product Details
-        <span className="text-ink-faint transition-transform group-open:rotate-180">⌄</span>
+        <svg viewBox="0 0 24 24" aria-hidden className="w-4 h-4 text-ink-faint transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </summary>
 
       <div className="mt-4">
