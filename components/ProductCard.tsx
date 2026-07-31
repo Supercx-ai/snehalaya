@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import type { Product } from "@/lib/shopify";
 import WishlistHeart from "./WishlistHeart";
 import LocalizedPrice from "./LocalizedPrice";
+import { useCart } from "./CartProvider";
 
 export default function ProductCard({
-  product: p, showNewBadge, fluid, fullWidth,
-}: { product: Product; showNewBadge?: boolean; fluid?: boolean; fullWidth?: boolean }) {
+  product: p, showNewBadge, fluid, fullWidth, quickAdd,
+}: { product: Product; showNewBadge?: boolean; fluid?: boolean; fullWidth?: boolean; quickAdd?: boolean }) {
   const router = useRouter();
+  const { addLine } = useCart();
+  const firstVariant = p.variants.nodes[0];
   const compareAt = p.compareAtPriceRange?.minVariantPrice;
   const onSale = compareAt && Number(compareAt.amount) > Number(p.priceRange.minVariantPrice.amount);
   const similarQuery = p.weaveType?.value ?? p.title;
@@ -39,6 +42,16 @@ export default function ProductCard({
           <span className="absolute bottom-3 left-3 bg-primary text-cream text-tiny tracking-wide2 uppercase px-2 py-0.5 rounded-sm">
             New
           </span>
+        )}
+        {quickAdd && firstVariant?.availableForSale && (
+          <button
+            type="button"
+            aria-label="Quick add to cart"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); addLine(firstVariant.id); }}
+            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-primary text-white text-lg leading-none flex items-center justify-center"
+          >
+            +
+          </button>
         )}
         <button
           type="button"

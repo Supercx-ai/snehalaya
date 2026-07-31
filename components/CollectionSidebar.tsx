@@ -5,10 +5,10 @@ import type { ProductFilter } from "@/lib/shopify";
 // and Tailwind's group-open: variant handles the chevron rotation.
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <details className="group border-b border-border-subtle py-4">
-      <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-ink">
+    <details className="group py-3.5">
+      <summary className="flex items-center justify-between cursor-pointer list-none text-sm text-ink">
         {title}
-        <Image src="/figma/icon-chevron.svg" alt="" width={10} height={10} className="group-open:rotate-180 transition-transform" />
+        <Image src="/figma/icon-chevron.svg" alt="" width={11} height={11} className="group-open:rotate-180 transition-transform" />
       </summary>
       <div className="mt-3">{children}</div>
     </details>
@@ -21,22 +21,22 @@ export default function CollectionSidebar({
   const listFilters = filters.filter((f) => f.type === "LIST");
 
   return (
-    <div className="rounded-lg border border-border-strong bg-white">
-      <div className="px-5 py-4 border-b border-border-strong">
-        <h2 className="text-base font-medium text-ink">Filters</h2>
+    <div className="rounded-lg bg-[#fdf0d5]">
+      <div className="px-5 pt-5 pb-3 border-b border-[#f0dcb2]">
+        <h2 className="font-display text-2xl text-ink">Filters</h2>
       </div>
 
-      <div className="px-5">
+      <div className="px-5 divide-y divide-[#f0dcb2]">
         <FilterGroup title="Price">
           <div className="flex items-center gap-2">
             <input
               type="number" name="minPrice" placeholder="Min" defaultValue={minPrice}
-              className="w-full h-9 px-3 rounded-sm border border-border-strong text-sm text-ink placeholder:text-ink-faint"
+              className="w-full h-9 px-3 rounded-sm border border-border-strong bg-white text-sm text-ink placeholder:text-ink-faint"
             />
             <span className="text-ink-faint">–</span>
             <input
               type="number" name="maxPrice" placeholder="Max" defaultValue={maxPrice}
-              className="w-full h-9 px-3 rounded-sm border border-border-strong text-sm text-ink placeholder:text-ink-faint"
+              className="w-full h-9 px-3 rounded-sm border border-border-strong bg-white text-sm text-ink placeholder:text-ink-faint"
             />
           </div>
         </FilterGroup>

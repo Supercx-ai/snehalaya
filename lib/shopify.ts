@@ -112,14 +112,17 @@ export type CartLine = {
     id: string;
     title: string;
     price: Money;
-    product: { id: string; title: string; handle: string; featuredImage: ImageT | null };
+    compareAtPrice: Money | null;
+    availableForSale: boolean;
+    selectedOptions: { name: string; value: string }[];
+    product: { id: string; title: string; handle: string; featuredImage: ImageT | null; tags: string[] };
   };
 };
 export type Cart = {
   id: string;
   checkoutUrl: string;
   totalQuantity: number;
-  cost: { subtotalAmount: Money; totalAmount: Money };
+  cost: { subtotalAmount: Money; totalAmount: Money; totalTaxAmount: Money | null };
   discountCodes: { code: string; applicable: boolean }[];
   lines: { nodes: CartLine[] };
 };
@@ -136,13 +139,18 @@ const PRODUCT_FIELDS = `
 `;
 const CART_FIELDS = `
   id checkoutUrl totalQuantity
-  cost { subtotalAmount { amount currencyCode } totalAmount { amount currencyCode } }
+  cost {
+    subtotalAmount { amount currencyCode }
+    totalAmount { amount currencyCode }
+    totalTaxAmount { amount currencyCode }
+  }
   discountCodes { code applicable }
   lines(first: 50) { nodes {
     id quantity
     merchandise { ... on ProductVariant {
-      id title price { amount currencyCode }
-      product { id title handle featuredImage { url altText width height } }
+      id title price { amount currencyCode } compareAtPrice { amount currencyCode } availableForSale
+      selectedOptions { name value }
+      product { id title handle featuredImage { url altText width height } tags }
     } }
   } }
 `;

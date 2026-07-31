@@ -15,6 +15,7 @@ import ColorSearchButton from "@/components/ColorSearchButton";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import CurrencySelector from "@/components/CurrencySelector";
 import MobileNav from "@/components/MobileNav";
+import KanjivaramMegaMenu from "@/components/KanjivaramMegaMenu";
 import Footer from "@/components/Footer";
 import "./globals.css";
 
@@ -105,21 +106,32 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </div>
             </div>
 
-            <nav className="hidden md:block border-t border-border-subtle overflow-x-auto">
-              <div className="mx-auto max-w-[1280px] flex gap-6 md:gap-8 px-4 md:px-8 py-3 text-base whitespace-nowrap">
-                {NAV.map((item, i) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={
-                      i === 0
-                        ? "font-semibold text-accent pr-8 border-r border-border"
-                        : "text-ink hover:text-primary"
-                    }
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+            <nav className="hidden md:block border-t border-border-subtle">
+              <div className="relative mx-auto max-w-[1280px] px-4 md:px-8">
+                <div className="flex gap-6 md:gap-8 text-base whitespace-nowrap overflow-x-auto">
+                  {NAV.map((item, i) =>
+                    item.label === "Kanjivaram" ? (
+                      <div key={item.label} className="group/kanjivaram shrink-0 py-3">
+                        <Link href={item.href} className="text-ink hover:text-primary">{item.label}</Link>
+                        <div className="hidden group-hover/kanjivaram:block absolute left-0 right-0 top-full z-40">
+                          <KanjivaramMegaMenu />
+                        </div>
+                      </div>
+                    ) : (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className={
+                          i === 0
+                            ? "py-3 shrink-0 font-semibold text-accent pr-8 border-r border-border"
+                            : "py-3 shrink-0 text-ink hover:text-primary"
+                        }
+                      >
+                        {item.label}
+                      </Link>
+                    )
+                  )}
+                </div>
               </div>
             </nav>
           </header>

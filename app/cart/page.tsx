@@ -1,53 +1,79 @@
-import Image from "next/image";
-import Link from "next/link";
-import { getCart } from "@/lib/cart";
+"use client";
 
-// Reads the cart cookie → always per-visitor, never cached.
-export default async function CartPage() {
-  const cart = await getCart();
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useCart } from "@/components/CartProvider";
+import { getUpsell } from "@/lib/cart";
+import type { Product } from "@/lib/shopify";
+import CartProgressSteps from "@/components/CartProgressSteps";
+import FreeShippingProgress from "@/components/FreeShippingProgress";
+import CartLineItem from "@/components/CartLineItem";
+import WishlistQuickAdd from "@/components/WishlistQuickAdd";
+import OrderSummary from "@/components/OrderSummary";
+import ProductGrid from "@/components/ProductGrid";
+
+// Reads the same live cart context CartDrawer and the header cart badge already use —
+// no separate server fetch needed, so quantity/coupon changes reflect instantly.
+export default function CartPage() {
+  const { cart } = useCart();
+  const [similar, setSimilar] = useState<Product[]>([]);
+
+  const firstProductId = cart?.lines.nodes[0]?.merchandise.product.id;
+  useEffect(() => {
+    if (firstProductId) getUpsell(firstProductId).then(setSimilar).catch(() => setSimilar([]));
+  }, [firstProductId]);
 
   if (!cart || cart.lines.nodes.length === 0) {
     return (
-      <main>
-        <h1>Your cart</h1>
-        <p>It’s empty. <Link href="/">Browse products →</Link></p>
+      <main className="max-w-[1280px] mx-auto px-4 md:px-9 py-16 text-center">
+        <h1 className="font-display font-light text-heading-md text-ink">Your Cart</h1>
+        <p className="mt-2 text-sm text-ink-subtle">
+          It&apos;s empty. <Link href="/" className="text-primary font-medium">Browse products →</Link>
+        </p>
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 640 }}>
-      <h1>Your cart</h1>
-      <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: "1rem" }}>
-        {cart.lines.nodes.map((line) => (
-          <li key={line.id} style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-            {line.merchandise.product.featuredImage && (
-              <Image
-                src={line.merchandise.product.featuredImage.url}
-                alt={line.merchandise.product.featuredImage.altText ?? line.merchandise.product.title}
-                width={72}
-                height={72}
-                style={{ borderRadius: 8, objectFit: "cover" }}
-              />
-            )}
-            <div style={{ flex: 1 }}>
-              <strong>{line.merchandise.product.title}</strong>
-              <div style={{ color: "#666" }}>
-                {line.quantity} × {line.merchandise.price.amount} {line.merchandise.price.currencyCode}
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+    <main className="max-w-[1280px] mx-auto px-4 md:px-9 py-8">
+      <div className="flex flex-wrap items-start justify-between gap-6">
+        <div>
+          <h1 className="font-display font-light text-heading-sm md:text-heading-md text-ink">
+            Your Cart <span className="text-lg font-sans font-normal text-ink-faint">({cart.totalQuantity} Items)</span>
+          </h1>
+          <p className="mt-1 text-sm text-ink-subtle">Review your items and proceed to checkout</p>
+        </div>
+        <CartProgressSteps />
+      </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", borderTop: "1px solid #eee", paddingTop: "1rem" }}>
-        <span style={{ fontSize: "1.1rem" }}>
-          Subtotal: <strong>{cart.cost.subtotalAmount.amount} {cart.cost.subtotalAmount.currencyCode}</strong>
-        </span>
-        {/* Hand off to Shopify's hosted, PCI-compliant checkout. */}
-        <a href={cart.checkoutUrl} style={{ padding: "0.75rem 1.5rem", background: "#111", color: "#fff", borderRadius: 8, textDecoration: "none" }}>
-          Checkout
-        </a>
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 items-start">
+        <div>
+          <FreeShippingProgress subtotal={Number(cart.cost.subtotalAmount.amount)} currencyCode={cart.cost.subtotalAmount.currencyCode} />
+
+          <div className="mt-6 rounded-lg border border-border-strong">
+            <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-5 py-3 text-xs tracking-wide2 text-ink-faint uppercase border-b border-border-strong">
+              <span>Product</span>
+              <span>Price</span>
+              <span>Quantity</span>
+              <span>Total</span>
+            </div>
+            <div className="px-5">
+              {cart.lines.nodes.map((line) => <CartLineItem key={line.id} line={line} />)}
+            </div>
+            <div className="px-5">
+              <WishlistQuickAdd />
+            </div>
+          </div>
+
+          {similar.length > 0 && (
+            <div className="mt-10">
+              <h2 className="text-sm font-medium text-ink mb-4">You May Also Like</h2>
+              <ProductGrid products={similar} quickAdd />
+            </div>
+          )}
+        </div>
+
+        <OrderSummary cart={cart} />
       </div>
     </main>
   );
