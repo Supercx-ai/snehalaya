@@ -1,59 +1,87 @@
-// Visual only — steps 2/3 happen on Shopify's own hosted checkout, not on this site,
-// so this just orients the shopper in the overall journey rather than being interactive.
-function CartIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 4h2l2.4 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6" />
-      <circle cx="9" cy="20" r="1.3" />
-      <circle cx="17" cy="20" r="1.3" />
-    </svg>
-  );
-}
+import Link from "next/link";
+import Image from "next/image";
 
-function PinIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
-      <circle cx="12" cy="10" r="2.5" />
-    </svg>
-  );
-}
+type Step = "cart" | "shipping" | "payment";
 
-function CardIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M3 10h18" />
-    </svg>
-  );
-}
-
-const STEPS = [
-  { label: "Cart", icon: CartIcon },
-  { label: "Shipping", icon: PinIcon },
-  { label: "Payment", icon: CardIcon },
+const STEPS: { id: Step; label: string; href: string }[] = [
+  { id: "cart", label: "Cart", href: "/cart" },
+  { id: "shipping", label: "Shipping", href: "/cart/shipping" },
+  { id: "payment", label: "Payment", href: "/cart/payment" },
 ];
 
-export default function CartProgressSteps() {
+function PinIcon({ className = "" }: { className?: string }) {
   return (
-    <div className="flex items-center">
-      {STEPS.map((step, i) => (
-        <div key={step.label} className="flex items-center">
-          <div className="flex flex-col items-center gap-1.5">
-            <div
-              className={`w-11 h-11 rounded-full flex items-center justify-center ${
-                i === 0 ? "bg-primary text-white" : "border border-border-strong text-ink-faint"
-              }`}
-            >
-              <step.icon />
-            </div>
-            <span className={`text-[11px] tracking-wide2 uppercase ${i === 0 ? "text-primary font-medium" : "text-ink-faint"}`}>
-              {i + 1}. {step.label}
-            </span>
-          </div>
-          {i < STEPS.length - 1 && <div className={`w-16 md:w-24 h-px mb-5 ${i === 0 ? "bg-primary" : "bg-border-strong"}`} />}
-        </div>
-      ))}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={`size-5 ${className}`} aria-hidden>
+      <path d="M12 21s-7-5.1-7-11a7 7 0 1 1 14 0c0 5.9-7 11-7 11Z" />
+      <circle cx="12" cy="10" r="2.6" />
+    </svg>
+  );
+}
+
+function CardIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={`size-5 ${className}`} aria-hidden>
+      <rect x="2.5" y="5" width="19" height="14" rx="2" />
+      <path d="M2.5 9.5h19" />
+      <path d="M6 15h4" />
+    </svg>
+  );
+}
+
+function ArrowConnector() {
+  return (
+    <div className="flex items-center mx-3 lg:mx-4 mb-6 text-[#cfc3ae]" aria-hidden>
+      <div className="w-10 sm:w-16 lg:w-[90px] h-px bg-current" />
+      <svg viewBox="0 0 8 10" fill="none" stroke="currentColor" strokeWidth="1.4" className="w-[7px] h-[9px] -ml-px">
+        <path d="M1 1l4.5 4L1 9" />
+      </svg>
     </div>
+  );
+}
+
+export default function CartProgressSteps({ current = "cart" }: { current?: Step }) {
+  const currentIndex = STEPS.findIndex((s) => s.id === current);
+
+  return (
+    <nav aria-label="Checkout progress" className="flex items-center justify-center">
+      {STEPS.map((step, i) => {
+        const active = i === currentIndex;
+        return (
+          <div key={step.id} className="flex items-center">
+            <Link href={step.href} className="flex flex-col items-center gap-2">
+              <div
+                className={`w-[46px] h-[46px] rounded-full flex items-center justify-center ${
+                  active ? "bg-burgundy text-cream" : "bg-[#f1ebe3] border border-[#e8e0d5] text-[#3f3f3f]"
+                }`}
+              >
+                {step.id === "cart" ? (
+                  <span className="relative size-5 overflow-clip">
+                    <Image
+                      src={active ? "/figma/icon-cart-white.svg" : "/figma/icon-cart.svg"}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="size-full"
+                    />
+                  </span>
+                ) : step.id === "shipping" ? (
+                  <PinIcon />
+                ) : (
+                  <CardIcon />
+                )}
+              </div>
+              <span
+                className={`text-[11px] tracking-[1.2px] uppercase whitespace-nowrap ${
+                  active ? "text-burgundy font-semibold" : "text-[#3f3f3f] font-medium"
+                }`}
+              >
+                {i + 1}. {step.label}
+              </span>
+            </Link>
+            {i < STEPS.length - 1 && <ArrowConnector />}
+          </div>
+        );
+      })}
+    </nav>
   );
 }

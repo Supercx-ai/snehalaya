@@ -54,21 +54,21 @@ export default async function CollectionsIndex({ searchParams }: { searchParams:
   return (
     // Same PLP comp as /collections/[handle] — this is the "all products" view.
     <main className="bg-cream">
-      <div className="px-4 md:px-[30px] py-6 md:py-8">
-        <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <nav className="flex items-center gap-1.5 text-xs text-ink-faint">
+      <div className="px-4 md:px-[30px] py-4 md:pt-5 md:pb-10">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <nav className="flex items-center gap-1.5 text-[11px] text-[#999]">
             <Link href="/" className="hover:text-ink">Home</Link>
             <span>/</span>
-            <span className="text-ink-secondary">Collections</span>
+            <span className="text-[#666]">Collections</span>
           </nav>
-          <h1 className="text-md font-semibold text-ink">All Sarees</h1>
+          <h1 className="text-[15px] font-medium text-[#333]">Sarees for Women</h1>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-8">
           <ShopByWeave bare />
         </div>
 
-        <FilterForm basePath="/collections" className="mt-6 flex flex-col lg:grid lg:grid-cols-[272px_1fr] gap-6 items-start">
+        <FilterForm basePath="/collections" className="mt-10 flex flex-col lg:grid lg:grid-cols-[272px_minmax(0,1fr)] gap-x-6 gap-y-6 items-start">
           <input type="hidden" name="sort" value={sortParam} />
           {sp.sale && <input type="hidden" name="sale" value={asOne(sp.sale)} />}
           <aside className="w-full lg:sticky lg:top-24">
@@ -85,7 +85,7 @@ export default async function CollectionsIndex({ searchParams }: { searchParams:
           </aside>
 
           <div className="flex-1 min-w-0 w-full">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <PlpChips
                 basePath="/collections"
                 query={buildQuery(sp).toString()}

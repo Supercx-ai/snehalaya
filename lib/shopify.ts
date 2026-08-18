@@ -489,11 +489,49 @@ export function cartBuyerIdentityUpdate(cartId: string, countryCode: CountryCode
   ).then((d) => d.cartBuyerIdentityUpdate.cart);
 }
 
+// Prefills Shopify checkout with the address collected on /cart/shipping.
+export function cartCheckoutIdentityUpdate(
+  cartId: string,
+  buyerIdentity: {
+    countryCode: CountryCode;
+    email?: string;
+    phone?: string;
+    deliveryAddress?: {
+      address1: string;
+      address2?: string;
+      city: string;
+      province: string;
+      zip: string;
+      country: string;
+      firstName: string;
+      lastName: string;
+      phone?: string;
+    };
+  }
+) {
+  const identity: Record<string, unknown> = { countryCode: buyerIdentity.countryCode };
+  if (buyerIdentity.email) identity.email = buyerIdentity.email;
+  if (buyerIdentity.phone) identity.phone = buyerIdentity.phone;
+  if (buyerIdentity.deliveryAddress) {
+    identity.deliveryAddressPreferences = [{ deliveryAddress: buyerIdentity.deliveryAddress }];
+  }
+
+  return shopifyFetch<{ cartBuyerIdentityUpdate: CartResult }>(
+    `mutation UpdateCheckoutIdentity($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
+      cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+        cart { ${CART_FIELDS} } userErrors { field message }
+      }
+    }`,
+    { cartId, buyerIdentity: identity },
+    { cache: "no-store" }
+  ).then((d) => d.cartBuyerIdentityUpdate.cart);
+}
+
 // Upsell strip in the cart drawer — recommendations based on the first line's product.
-export function getProductRecommendations(productId: string) {
+export function getProductRecommendations(productId: string, limit = 4) {
   return shopifyFetch<{ productRecommendations: Product[] }>(
     `query Recs($productId: ID!) { productRecommendations(productId: $productId) { ${PRODUCT_FIELDS} } }`,
     { productId },
     { tags: ["products"] }
-  ).then((d) => d.productRecommendations.slice(0, 4));
+  ).then((d) => d.productRecommendations.slice(0, limit));
 }

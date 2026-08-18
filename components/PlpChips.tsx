@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 // New maps to the newest sort; On Sale to the client-side sale filter (?sale=1) —
 // Shopify's Storefront API has no server-side on-sale product filter.
 function chipClass(active: boolean) {
-  return `inline-flex items-center gap-[7px] h-[35px] px-3.5 rounded-[5px] border bg-white text-sm transition-colors ${
-    active ? "border-burgundy text-burgundy" : "border-[#e6e6e6] text-ink"
+  return `inline-flex items-center gap-[7px] h-[35px] px-3 rounded-[5px] border bg-white text-[13px] font-medium transition-colors ${
+    active ? "border-burgundy text-burgundy" : "border-[#e6e6e6] text-[#333]"
   }`;
 }
 

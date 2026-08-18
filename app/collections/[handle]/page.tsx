@@ -95,28 +95,23 @@ export default async function CollectionPage({
     />
     {/* PLP comp (MacBook Air - 5, node 2239-11): cream page, 30px gutters, fluid width. */}
     <main className="bg-cream">
-      <div className="px-4 md:px-[30px] py-6 md:py-8">
-        <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <nav className="flex items-center gap-1.5 text-xs text-ink-faint">
-            <Link href="/" className="hover:text-ink">Home</Link>
-            <span>/</span>
-            <Link href="/collections" className="hover:text-ink">Collections</Link>
-            <span>/</span>
-            <span className="text-ink-secondary">{collection.title}</span>
-          </nav>
-          <h1 className="text-md font-semibold text-ink">{collection.title}</h1>
-        </div>
-        {collection.description && (
-          <p className="mt-2 max-w-[720px] text-sm text-ink-subtle">{collection.description}</p>
-        )}
+      <div className="px-4 md:px-[30px] py-4 md:pt-5 md:pb-10">
+        <nav className="flex items-center gap-1.5 text-[11px] text-[#999]">
+          <Link href="/" className="hover:text-ink">Home</Link>
+          <span>/</span>
+          <Link href="/collections" className="hover:text-ink">Collections</Link>
+          <span>/</span>
+          <span className="text-[#666]">{collection.title}</span>
+        </nav>
+        <h1 className="sr-only">{collection.title}</h1>
 
-        <div className="mt-4">
+        <div className="mt-6">
           <ShopByWeave bare />
         </div>
 
         <FilterForm
           basePath={`/collections/${handle}`}
-          className="mt-6 flex flex-col lg:grid lg:grid-cols-[272px_1fr] gap-6 items-start"
+          className="mt-10 flex flex-col lg:grid lg:grid-cols-[272px_minmax(0,1fr)] gap-x-6 gap-y-6 items-start"
         >
           <input type="hidden" name="sort" value={sortParam} />
           {sp.sale && <input type="hidden" name="sale" value={asOne(sp.sale)} />}
@@ -129,11 +124,12 @@ export default async function CollectionPage({
               collections={collections.filter((c) => c.handle !== handle).map((c) => ({ handle: c.handle, title: c.title }))}
               keywordSelections={keywordSelections}
               discount={disc}
+              showApply={false}
             />
           </aside>
 
           <div className="flex-1 min-w-0 w-full">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <PlpChips
                 basePath={`/collections/${handle}`}
                 query={buildQuery(sp).toString()}

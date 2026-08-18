@@ -6,9 +6,8 @@ export default function ProductGrid({ products, quickAdd, plp }: { products: Pro
     <div
       className={
         plp
-          ? // PLP comp (MacBook Air - 5): ~289px cards — column count grows with the
-            // fluid page width instead of stretching the cards (per feedback).
-            "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-10"
+          ? // PLP: 22px column / 37px row gap; 5-up on desktop per client request.
+            "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 lg:gap-x-[18px] gap-y-8 lg:gap-y-[37px]"
           : "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10"
       }
     >

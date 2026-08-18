@@ -73,9 +73,10 @@ export default function CartDrawer() {
                 {formatMoney(cart.cost.subtotalAmount.amount, cart.cost.subtotalAmount.currencyCode)}
               </span>
             </div>
-            <a
-              href={cart.checkoutUrl}
-              onClick={() =>
+            <Link
+              href="/cart/shipping"
+              onClick={() => {
+                setOpen(false);
                 gaEvent("begin_checkout", {
                   currency: cart.cost.totalAmount.currencyCode,
                   value: Number(cart.cost.totalAmount.amount),
@@ -85,12 +86,12 @@ export default function CartDrawer() {
                     price: Number(l.merchandise.price.amount),
                     quantity: l.quantity,
                   })),
-                })
-              }
-              className="flex items-center justify-center h-12 rounded-sm bg-primary text-cream text-sm font-medium tracking-wide2 uppercase"
+                });
+              }}
+              className="flex items-center justify-center h-12 rounded-sm bg-burgundy text-cream text-sm font-medium tracking-wide2 uppercase"
             >
               Checkout · {formatMoney(cart.cost.totalAmount.amount, cart.cost.totalAmount.currencyCode)}
-            </a>
+            </Link>
             <div className="mt-3 flex items-center justify-center gap-3 text-xs">
               <Link href="/cart" onClick={() => setOpen(false)} className="text-ink underline">View Cart</Link>
               <span className="text-border-strong">|</span>

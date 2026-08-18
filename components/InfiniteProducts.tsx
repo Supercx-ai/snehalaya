@@ -49,6 +49,7 @@ export default function InfiniteProducts({
   }, [resetKey]);
 
   useEffect(() => {
+    if (plp) return;
     if (!more || !nextCursor) return;
     const el = sentinel.current;
     if (!el) return;
@@ -62,12 +63,13 @@ export default function InfiniteProducts({
             setMore(page.pageInfo.hasNextPage);
           });
         }
+        // PLP uses an explicit Load More button (Figma node 2239:383).
       },
       { rootMargin: "400px" } // start fetching before the sentinel is actually visible
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [more, nextCursor, pending, loadMore]);
+  }, [plp, more, nextCursor, pending, loadMore]);
 
   // Client-side filters (On Sale chip, Occasion/Pattern/Work/Size keywords, Discount %):
   // Shopify's Storefront API can't express these, so hide non-matching items from the
@@ -94,13 +96,35 @@ export default function InfiniteProducts({
       })
     : items;
 
+  function fetchNext() {
+    if (!more || !nextCursor || pending) return;
+    start(async () => {
+      const page = await loadMore(nextCursor);
+      setItems((prev) => [...prev, ...page.nodes]);
+      setNextCursor(page.pageInfo.endCursor);
+      setMore(page.pageInfo.hasNextPage);
+    });
+  }
+
   return (
     <>
       <ProductGrid products={visible} plp={plp} />
       {hasClientFilter && visible.length === 0 && !more && (
         <p className="py-16 text-center text-sm text-ink-subtle">No products match these filters right now.</p>
       )}
-      {more && <div ref={sentinel} style={{ textAlign: "center", padding: "2rem", color: "#999" }}>{pending ? "Loading…" : ""}</div>}
+      {more && plp && (
+        <div className="flex justify-center pt-10 pb-4">
+          <button
+            type="button"
+            onClick={fetchNext}
+            disabled={pending}
+            className="h-[52px] w-[159px] rounded-[5px] border border-accent text-lg tracking-wide2 text-ink disabled:opacity-60"
+          >
+            {pending ? "Loading…" : "Load More"}
+          </button>
+        </div>
+      )}
+      {more && !plp && <div ref={sentinel} style={{ textAlign: "center", padding: "2rem", color: "#999" }}>{pending ? "Loading…" : ""}</div>}
     </>
   );
 }

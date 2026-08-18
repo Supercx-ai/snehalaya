@@ -8,17 +8,32 @@ import { useRouter } from "next/navigation";
 export default function FilterForm({ basePath, className, children }: { basePath: string; className?: string; children: React.ReactNode }) {
   const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  function navigate(form: HTMLFormElement) {
     const params = new URLSearchParams();
-    for (const [key, value] of new FormData(e.currentTarget)) {
+    for (const [key, value] of new FormData(form)) {
       params.append(key, value.toString());
     }
     router.push(`${basePath}?${params.toString()}`);
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    navigate(e.currentTarget);
+  }
+
+  function handleChange(e: React.FormEvent<HTMLFormElement>) {
+    const t = e.target;
+    if (!(t instanceof HTMLInputElement)) return;
+    if (t.type === "checkbox" || t.type === "radio") navigate(e.currentTarget);
+  }
+
+  function handleBlur(e: React.FocusEvent<HTMLFormElement>) {
+    const t = e.target;
+    if (t instanceof HTMLInputElement && t.type === "number") navigate(e.currentTarget);
+  }
+
   return (
-    <form method="get" onSubmit={handleSubmit} className={className}>
+    <form method="get" onSubmit={handleSubmit} onChange={handleChange} onBlur={handleBlur} className={className}>
       {children}
     </form>
   );

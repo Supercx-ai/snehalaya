@@ -9,10 +9,13 @@ import {
   cartLinesRemove,
   cartDiscountCodesUpdate,
   cartBuyerIdentityUpdate,
+  cartCheckoutIdentityUpdate,
   getCart as fetchCart,
   getProductRecommendations,
+  getProducts,
   type CountryCode,
 } from "./shopify";
+import { splitName, toE164India, type CheckoutAddress } from "./checkout-address";
 import { getSelectedCountry, setCurrency } from "./currency";
 
 const COOKIE = "cartId";
@@ -59,8 +62,23 @@ export async function applyDiscountCode(code: string) {
   return cart;
 }
 
-export async function getUpsell(productId: string) {
-  return getProductRecommendations(productId);
+// Cart-page "You May Also Like" rail: Shopify's recommendations first, topped up with
+// recent store products so the rail is long enough to scroll; excludes what's in the cart.
+export async function getUpsell(productId: string, excludeIds: string[] = []) {
+  const [recs, more] = await Promise.all([
+    getProductRecommendations(productId, 10),
+    getProducts(24).catch(() => []),
+  ]);
+  const exclude = new Set([productId, ...excludeIds]);
+  const seen = new Set<string>();
+  const out = [];
+  for (const p of [...recs, ...more]) {
+    if (exclude.has(p.id) || seen.has(p.id)) continue;
+    seen.add(p.id);
+    out.push(p);
+    if (out.length >= 24) break;
+  }
+  return out;
 }
 
 // Sets the visitor's currency AND, if they already have a cart, actually re-prices it
@@ -79,4 +97,36 @@ export async function switchCurrency(country: CountryCode) {
 export async function buyNow(merchandiseId: string, quantity = 1) {
   const cart = await cartCreate(merchandiseId, quantity, await getSelectedCountry());
   return cart?.checkoutUrl ?? null;
+}
+
+export async function saveCheckoutBuyerIdentity(address: CheckoutAddress) {
+  const id = (await cookies()).get(COOKIE)?.value;
+  if (!id) return null;
+  const country = await getSelectedCountry();
+  const { firstName, lastName } = splitName(address.fullName);
+  const phone = toE164India(address.mobile);
+  try {
+    const cart = await cartCheckoutIdentityUpdate(id, {
+      countryCode: country,
+      email: address.email.trim() || undefined,
+      phone,
+      deliveryAddress: {
+        address1: address.house.trim(),
+        address2: [address.area, address.landmark].filter(Boolean).join(", ") || undefined,
+        city: address.city.trim(),
+        province: address.state.trim(),
+        zip: address.pincode.trim(),
+        country: country === "IN" ? "IN" : country,
+        firstName,
+        lastName,
+        phone,
+      },
+    });
+    revalidatePath("/cart");
+    revalidatePath("/cart/shipping");
+    revalidatePath("/cart/payment");
+    return cart;
+  } catch {
+    return null;
+  }
 }

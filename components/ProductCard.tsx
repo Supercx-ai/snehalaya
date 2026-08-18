@@ -45,8 +45,9 @@ export default function ProductCard({
         {p.featuredImage && (
           <Image src={p.featuredImage.url} alt={p.featuredImage.altText ?? p.title} fill className="object-cover" />
         )}
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3.5 right-3.5">
           <WishlistHeart
+            plp={plp}
             item={{
               handle: p.handle,
               title: p.title,
@@ -58,8 +59,8 @@ export default function ProductCard({
         </div>
         {showNewBadge && (
           plp ? (
-            // PLP comp (MacBook Air - 5): larger burgundy pill, sentence case
-            <span className="absolute bottom-3 left-3 bg-burgundy text-white text-sm px-3 py-1 rounded-[6px]">
+            // PLP comp (MacBook Air - 5): #7b1e28 pill, 14.7px, ~2px tracking
+            <span className="absolute bottom-3 left-3.5 bg-[#7b1e28] text-cream text-[15px] tracking-[2px] px-4 py-1.5 rounded-[6.5px]">
               New
             </span>
           ) : (
@@ -68,15 +69,20 @@ export default function ProductCard({
             </span>
           )
         )}
-        {/* White "On Sale" pill, top-left — image-search results grid, node 2467:2 */}
         {onSale && (
-          <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs text-ink shadow-sm">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#67111a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
-              <circle cx="7.5" cy="7.5" r="0.5" fill="#67111a" />
-            </svg>
-            On Sale
-          </span>
+          plp ? (
+            <span className="absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 h-[35px] rounded-[5px] border border-[#e6e6e6] bg-white px-2.5 text-[13px] font-medium text-[#333]">
+              On Sale
+            </span>
+          ) : (
+            <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs text-ink shadow-sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#67111a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+                <circle cx="7.5" cy="7.5" r="0.5" fill="#67111a" />
+              </svg>
+              On Sale
+            </span>
+          )
         )}
         {quickAdd && firstVariant?.availableForSale && (
           <button
@@ -119,7 +125,7 @@ export default function ProductCard({
           <p className="mt-2 text-base font-medium text-ink flex items-baseline gap-2.5">
             <LocalizedPrice handle={p.handle} amount={p.priceRange.minVariantPrice.amount} currencyCode={p.priceRange.minVariantPrice.currencyCode} format="currency" />
             {onSale && compareAt && (
-              <span className="font-normal text-[#999999] line-through">
+              <span className="text-xs font-normal text-[#999999] line-through">
                 <LocalizedPrice handle={p.handle} amount={compareAt.amount} currencyCode={compareAt.currencyCode} format="currency" />
               </span>
             )}
