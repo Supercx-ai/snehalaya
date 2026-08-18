@@ -46,7 +46,7 @@ function RulerIcon() {
 }
 
 export default function ProductPurchaseBox({
-  productId, handle, title, compareAtPrice, options, variants,
+  productId, handle, title, compareAtPrice, options, variants, colourways,
 }: {
   productId: string;
   handle: string;
@@ -54,6 +54,9 @@ export default function ProductPurchaseBox({
   compareAtPrice: Money | null;
   options: ProductOption[];
   variants: ProductVariant[];
+  // Server-rendered <ColourwaySwatches> — sibling colourway products, shown where the
+  // design puts its Color section when there's no real Color variant option.
+  colourways?: React.ReactNode;
 }) {
   const firstAvailable = variants.find((v) => v.availableForSale) ?? variants[0];
   const [selected, setSelected] = useState<Record<string, string>>(
@@ -66,16 +69,26 @@ export default function ProductPurchaseBox({
     [variants, selected, firstAvailable]
   );
 
-  const compareAtAmount = Number(compareAtPrice?.amount ?? 0);
+  // Prefer the selected variant's own compare-at price; the product-level range is a
+  // fallback for stores that only set it at product level.
+  const effectiveCompareAt = variant?.compareAtPrice ?? compareAtPrice;
+  const compareAtAmount = Number(effectiveCompareAt?.amount ?? 0);
   const currentAmount = Number(variant?.price.amount ?? 0);
-  const onSale = compareAtPrice && compareAtAmount > currentAmount;
+  const onSale = effectiveCompareAt && compareAtAmount > currentAmount;
   const discountPct = onSale ? Math.round((1 - currentAmount / compareAtAmount) * 100) : 0;
 
   // A single-value Size option just states a fact ("Free Size") rather than offering a
   // real choice — surface it as a badge instead of a one-option selector.
   const sizeOption = options.find((o) => o.name.toLowerCase() === "size");
-  const fixedSize = sizeOption && sizeOption.optionValues.length === 1 ? sizeOption.optionValues[0].name : null;
-  const selectableOptions = options.filter((o) => o !== sizeOption || !fixedSize);
+  // Sarees are one-size — when there's no real Size option the design still shows the
+  // "Free Size" chip (PDP node 2245:865), so default to it.
+  const fixedSize = sizeOption
+    ? sizeOption.optionValues.length === 1 ? sizeOption.optionValues[0].name : null
+    : "Free Size";
+  // Shopify's placeholder "Title / Default Title" option isn't a real choice either.
+  const selectableOptions = options.filter(
+    (o) => (o !== sizeOption || !fixedSize) && !(o.name.toLowerCase() === "title" && o.optionValues.length === 1)
+  );
 
   const item = variant
     ? { id: productId, title, amount: variant.price.amount, currencyCode: variant.price.currencyCode }
@@ -83,14 +96,15 @@ export default function ProductPurchaseBox({
 
   return (
     <div>
-      <p className="flex items-baseline gap-3 text-2xl font-medium text-ink">
+      <p className="flex items-baseline gap-3 text-[24px] font-bold text-ink">
         <LocalizedPrice handle={handle} amount={variant?.price.amount ?? "0"} currencyCode={variant?.price.currencyCode ?? "INR"} format="currency" />
-        {onSale && compareAtPrice && (
+        {onSale && effectiveCompareAt && (
           <>
-            <span className="text-base font-normal text-ink-faint line-through">
-              <LocalizedPrice handle={handle} amount={compareAtPrice.amount} currencyCode={compareAtPrice.currencyCode} format="currency" />
+            <span className="text-base font-normal text-[#999999] line-through">
+              <LocalizedPrice handle={handle} amount={effectiveCompareAt.amount} currencyCode={effectiveCompareAt.currencyCode} format="currency" />
             </span>
-            <span className="text-sm font-medium text-accent">{discountPct}% OFF</span>
+            {/* Green %OFF — PDP node 2245:865 pairs it with the (i) tooltip circle */}
+            <span className="text-base font-semibold text-[#2e7d32]">{discountPct}%OFF</span>
             <span className="flex items-center justify-center w-4 h-4 rounded-full border border-ink-faint text-ink-faint text-[10px] leading-none" title="Discount applied at checkout">
               i
             </span>
@@ -100,6 +114,8 @@ export default function ProductPurchaseBox({
       <p className="mt-1 text-xs text-ink">(inclusive of all taxes)</p>
 
       <LiveMirror />
+
+      {!selectableOptions.some((o) => ["color", "colour"].includes(o.name.toLowerCase())) && colourways}
 
       {selectableOptions.map((opt) => {
         const isColor = ["color", "colour"].includes(opt.name.toLowerCase());
@@ -153,7 +169,7 @@ export default function ProductPurchaseBox({
       <div className="mt-6 sm:flex sm:items-center sm:gap-3">
         <div className="flex items-center gap-3 sm:contents">
           <div className="flex items-center gap-2">
-            <span className="text-xs tracking-wide2 text-ink uppercase">Qty</span>
+            <span className="text-sm text-ink">Qty:</span>
             <div className="relative">
               <select
                 value={quantity}

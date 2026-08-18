@@ -31,7 +31,7 @@ export default function Hero() {
             Explore Collection
           </Link>
           <Link
-            href="/collections/new-arrivals"
+            href="/collections/new-arrival"
             className="flex items-center justify-center w-full xs:w-[195px] h-[41px] rounded-sm border border-white text-white text-2xs font-medium tracking-wide2"
           >
             Shop New Arrivals

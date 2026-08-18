@@ -5,7 +5,7 @@ const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE;
 const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
 
 const btn =
-  "flex-1 min-w-[9rem] h-14 rounded-lg border border-[#e6bcbc] text-ink text-sm flex items-center justify-center gap-2.5";
+  "flex-1 min-w-[9rem] h-14 rounded-lg border border-[#e0b3b3] text-burgundy text-sm flex items-center justify-center gap-2.5";
 
 function ChatIcon() {
   return (
@@ -35,14 +35,15 @@ function MailIcon() {
   );
 }
 
+// The section always renders (PDP node 2245:865 shows all three pills — with a literal
+// "0000000000" placeholder). Unconfigured channels render as inert pills so the layout
+// matches the design; they become working links once the env vars are set.
 export default function CustomerSupport({ chatText }: { chatText: string }) {
-  if (!WHATSAPP_NUMBER && !SUPPORT_PHONE && !SUPPORT_EMAIL) return null;
-
   return (
-    <div className="border-t border-border-strong pt-6">
-      <h3 className="text-xl font-medium text-ink mb-4">Customer Support</h3>
+    <div className="pt-2">
+      <h3 className="text-xl text-ink mb-4">Customer Support</h3>
       <div className="flex flex-wrap gap-3">
-        {WHATSAPP_NUMBER && (
+        {WHATSAPP_NUMBER ? (
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(chatText)}`}
             target="_blank"
@@ -51,16 +52,28 @@ export default function CustomerSupport({ chatText }: { chatText: string }) {
           >
             <ChatIcon /> Chat with us
           </a>
+        ) : (
+          <span className={btn}>
+            <ChatIcon /> Chat with us
+          </span>
         )}
-        {SUPPORT_PHONE && (
+        {SUPPORT_PHONE ? (
           <a href={`tel:${SUPPORT_PHONE}`} className={btn}>
             <PhoneIcon /> {SUPPORT_PHONE}
           </a>
+        ) : (
+          <span className={btn}>
+            <PhoneIcon /> 0000000000
+          </span>
         )}
-        {SUPPORT_EMAIL && (
+        {SUPPORT_EMAIL ? (
           <a href={`mailto:${SUPPORT_EMAIL}`} className={btn}>
             <MailIcon /> Mail us
           </a>
+        ) : (
+          <span className={btn}>
+            <MailIcon /> Mail us
+          </span>
         )}
       </div>
     </div>

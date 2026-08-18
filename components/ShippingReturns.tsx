@@ -9,8 +9,8 @@ function Check() {
 // Static policy copy — update here if the actual shipping/returns terms change.
 export default function ShippingReturns() {
   return (
-    <details className="group border-t border-border-strong py-4" open>
-      <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-ink">
+    <details className="group border-t border-border py-5" open>
+      <summary className="flex items-center justify-between cursor-pointer list-none text-xl text-ink">
         Shipping &amp; Returns
         <svg viewBox="0 0 24 24" aria-hidden className="w-4 h-4 text-ink-faint transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 9l6 6 6-6" />
@@ -32,8 +32,7 @@ export default function ShippingReturns() {
             </span>
           </li>
         </ul>
-        {/* ponytail: static link — point at a real returns-policy page when one exists */}
-        <a href="#" className="mt-3 inline-block underline text-ink">More Details</a>
+        <a href="/returns-exchange" className="mt-3 inline-block underline text-ink">More Details</a>
       </div>
     </details>
   );

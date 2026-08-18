@@ -40,7 +40,13 @@ export async function shopifyFetch<T>(
     headers: {
       "Content-Type": "application/json",
       // mock.shop needs no token; only send it when hitting a real store.
-      ...(live ? { "X-Shopify-Storefront-Access-Token": token! } : {}),
+      // Headless-channel PRIVATE tokens (shpat_...) use their own header; public
+      // Storefront tokens (32-hex) use the classic one. Wrong header = 401 either way.
+      ...(live
+        ? token!.startsWith("shpat_")
+          ? { "Shopify-Storefront-Private-Token": token! }
+          : { "X-Shopify-Storefront-Access-Token": token! }
+        : {}),
     },
     body: JSON.stringify({
       query: opts.country ? withContext(query) : query,
@@ -87,6 +93,7 @@ export type ProductVariant = {
   title: string;
   availableForSale: boolean;
   price: Money;
+  compareAtPrice: Money | null;
   selectedOptions: { name: string; value: string }[];
 };
 export type ProductOption = { name: string; optionValues: { name: string }[] };
@@ -243,7 +250,7 @@ export function getProduct(handle: string) {
       metafields(identifiers: [${METAFIELD_IDENTIFIERS}]) { key value }
       options { name optionValues { name } }
       allVariants: variants(first: 25) {
-        nodes { id title availableForSale price { amount currencyCode } selectedOptions { name value } }
+        nodes { id title availableForSale price { amount currencyCode } compareAtPrice { amount currencyCode } selectedOptions { name value } }
       }
     } }`,
     { handle },

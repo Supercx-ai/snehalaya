@@ -11,7 +11,7 @@ export default function MaharaniPromo() {
         <h2 className="font-display font-light text-heading-sm md:text-heading-lg text-white">MAHARANI</h2>
         <div className="mt-4 w-[220px] sm:w-[301px] border-t border-accent" />
         <p className="mt-4 font-display font-semibold text-2xl text-[#f3e7dc]">Limited pieces. Exceptional craftsmanship.</p>
-        <Link href="/collections/maharani-exclusive" className="mt-8 flex items-center justify-center h-[43px] w-[183px] rounded-sm bg-white text-primary text-xs tracking-wide2">
+        <Link href="/collections/maharani-bridal-collection" className="mt-8 flex items-center justify-center h-[43px] w-[183px] rounded-sm bg-white text-primary text-xs tracking-wide2">
           Discover Maharani
         </Link>
       </div>

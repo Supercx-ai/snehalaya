@@ -4,8 +4,8 @@ import Link from "next/link";
 // "Everyday Elegance" has no dedicated collection yet, so it falls back to free-text
 // /search — same pattern used for other unmatched Figma categories across the homepage.
 const LOOKS = [
-  { label: "Festive Mornings", image: "/figma/shop-look/festive-mornings.png", href: "/collections/festival-occasion" },
-  { label: "The Bridal Trousseau", image: "/figma/shop-look/bridal-trousseau.png", href: "/collections/bridal-muhurtham" },
+  { label: "Festive Mornings", image: "/figma/shop-look/festive-mornings.png", href: "/collections/festive-kanjivarams" },
+  { label: "The Bridal Trousseau", image: "/figma/shop-look/bridal-trousseau.png", href: "/collections/maharani-bridal-collection" },
   { label: "Everyday Elegance", image: "/figma/shop-look/everyday-elegance.png", href: "/search?q=everyday" },
 ] as const;
 

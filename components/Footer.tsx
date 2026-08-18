@@ -10,20 +10,19 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     title: "Shop",
     links: [
       { label: "Sarees", href: "/collections" },
-      { label: "New Arrivals", href: "/collections/new-arrivals" },
-      { label: "Bridal", href: "/collections/bridal-muhurtham" },
-      { label: "Maharani", href: "/collections/maharani-exclusive" },
+      { label: "New Arrivals", href: "/collections/new-arrival" },
+      { label: "Bridal", href: "/collections/maharani-bridal-collection" },
+      { label: "Maharani", href: "/collections/maharani-bridal-collection" },
     ],
   },
   {
-    // ponytail: Shipping/Returns/FAQs have no page yet — render as plain text rather
-    // than a broken link. Contact Us routes through WhatsApp, the site's real contact channel.
+    // ponytail: Contact Us routes through WhatsApp, the site's real contact channel.
     title: "Help",
     links: [
       { label: "Contact Us" },
-      { label: "Shipping" },
-      { label: "Returns" },
-      { label: "FAQs" },
+      { label: "Shipping Details", href: "/shipping-policy" },
+      { label: "Returns & Exchanges", href: "/returns-exchange" },
+      { label: "FAQs", href: "/faq" },
     ],
   },
   {
@@ -31,6 +30,8 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Our Story", href: "/about" },
       { label: "Stores", href: "/store-locator" },
+      { label: "Terms & Conditions", href: "/terms-and-conditions" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
       { label: "Careers" },
       { label: "Journal", href: "/blog" },
     ],

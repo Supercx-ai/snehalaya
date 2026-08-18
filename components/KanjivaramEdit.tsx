@@ -15,7 +15,7 @@ export default function KanjivaramEdit() {
           <p className="mt-4 text-base text-white/90 leading-relaxed">
             Woven in the finest Mulberry silk, each Kanjivaram carries the legacy of three generations of artisans — real zari, enduring weight, and colour that lasts a lifetime.
           </p>
-          <Link href="/collections/kanjivaram-silk-sarees" className="mt-6 inline-flex items-center justify-center h-[43px] w-[183px] rounded-sm bg-primary text-white text-xs tracking-wide2">
+          <Link href="/collections/kanjivaram-silk" className="mt-6 inline-flex items-center justify-center h-[43px] w-[183px] rounded-sm bg-primary text-white text-xs tracking-wide2">
             Explore Kanjivaram
           </Link>
         </div>

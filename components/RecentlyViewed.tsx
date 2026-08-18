@@ -14,7 +14,7 @@ export default function RecentlyViewed({ current }: { current?: ViewedProduct })
       <h2 className="font-display font-light text-heading-sm md:text-heading-lg text-ink">Recently Viewed</h2>
       <div className="mt-6 flex gap-6 overflow-x-auto [scrollbar-width:none]">
         {items.map((p) => (
-          <Link key={p.handle} href={`/products/${p.handle}`} className="block w-[160px] shrink-0">
+          <Link key={p.handle} href={`/products/${p.handle}`} className="block w-[264px] shrink-0">
             <div className="relative rounded-card overflow-hidden bg-border-subtle aspect-[264/352]">
               {p.image && <Image src={p.image} alt={p.title} fill className="object-cover" />}
             </div>

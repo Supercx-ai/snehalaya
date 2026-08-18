@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getProduct, getProducts, getProductRecommendations } from "@/lib/shopify";
+import { getProduct, getProducts, getProductRecommendations, getProductsByQuery } from "@/lib/shopify";
+import ColourwaySwatches, { type Colourway } from "@/components/ColourwaySwatches";
 import ProductGrid from "@/components/ProductGrid";
 import { generateProductStructuredData, generateBreadcrumbStructuredData } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
@@ -51,6 +52,26 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
   // Shopify's own recommendation model — real signal today, unlike a hand-rolled
   // colour/weave/border scorer that would need metafields that don't exist yet.
   const similar = await getProductRecommendations(product.id);
+
+  // Colourways for the design's "Color" swatches — each colourway is its own product
+  // ("Mint Blue Raw Silk Saree", "Pink Raw Silk Saree"). Shared style = title minus the
+  // leading colour words (and any trailing SKU token like "SSBG03205").
+  const isSku = (w: string) => /^[a-z]{2,6}\d{3,}$/i.test(w);
+  const stripSku = (t: string) => t.trim().split(/\s+/).filter((w) => !isSku(w)).join(" ");
+  const words = stripSku(product.title).split(/\s+/);
+  const phrase = words.slice(-3).join(" ");
+  let colourways: Colourway[] = [];
+  if (words.length > 3) {
+    const res = await getProductsByQuery(`title:"${phrase}"`, { first: 10 }).catch(() => null);
+    colourways = (res?.nodes ?? [])
+      .filter((p) => stripSku(p.title).endsWith(phrase) && stripSku(p.title) !== phrase)
+      .slice(0, 6)
+      .map((p) => ({
+        handle: p.handle,
+        name: stripSku(p.title).slice(0, -phrase.length).trim(),
+        image: p.featuredImage?.url ?? null,
+      }));
+  }
 
   return (
     <>
@@ -116,6 +137,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
                 compareAtPrice={product.compareAtPriceRange?.minVariantPrice ?? null}
                 options={product.options}
                 variants={product.allVariants}
+                colourways={<ColourwaySwatches items={colourways} currentHandle={product.handle} />}
               />
             </div>
 
@@ -128,7 +150,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
             <OffersBox />
 
             <div className="mt-6">
-              <ProductAttributes metafields={product.metafields} />
+              <ProductAttributes metafields={product.metafields} description={product.description} />
               <ShippingReturns />
             </div>
 
@@ -144,7 +166,8 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
         {similar.length > 0 && (
           <div className="mt-16">
-            <h2 className="font-display font-light text-heading-sm md:text-heading-lg text-ink text-center">You May Also Like</h2>
+            {/* Left-aligned serif heading — "Similar Items", PDP node 2245:865 */}
+            <h2 className="font-display font-light text-heading-sm md:text-heading-md text-ink">Similar Items</h2>
             <div className="mt-8">
               <ProductGrid products={similar} />
             </div>

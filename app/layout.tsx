@@ -22,26 +22,25 @@ import "./globals.css";
 // Weights confirmed from the Figma header pull: Regular(400)/Medium(500)/SemiBold(600).
 const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-manrope" });
 // Serif display face, confirmed from the hero heading — Cormorant Garamond Light.
-const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["300", "400", "500"], variable: "--font-cormorant" });
+// 600 is used by the legal pages' section headings (T&C node 2505:2364).
+const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--font-cormorant" });
 
 export const metadata: Metadata = {
   title: "Snehalayaa Silks",
   description: "Headless Shopify storefront",
 };
 
-// ponytail: nav maps to real collections where they exist. Banarasi/Chanderi/Paithani/
-// Tussar are weave/regional-style names — not a Fabric taxonomy value (Fabric means
-// material: Silk/Cotton/Denim) and no dedicated collection exists yet, so they route
-// through the free-text /search instead. Swap to real collections when they exist.
+// Handles verified against the live store's Storefront API (collections query) —
+// every nav item now lands on a real collection instead of a guessed handle/search.
 const NAV = [
-  { label: "New Arrivals", href: "/collections/new-arrivals" },
-  { label: "Kanjivaram", href: "/collections/kanjivaram-silk-sarees" },
-  { label: "Banarasi", href: "/search?q=banarasi" },
-  { label: "Chanderi", href: "/search?q=chanderi" },
-  { label: "Paithani", href: "/search?q=paithani" },
-  { label: "Tussar", href: "/search?q=tussar" },
-  { label: "Wedding", href: "/collections/bridal-muhurtham" },
-  { label: "The Edit", href: "/collections/maharani-exclusive" },
+  { label: "New Arrivals", href: "/collections/new-arrival" }, // "Just Arrived"
+  { label: "Kanjivaram", href: "/collections/kanjivaram-silk" },
+  { label: "Banarasi", href: "/collections/banarasi-silk" },
+  { label: "Chanderi", href: "/collections/chanderi-cotton" },
+  { label: "Paithani", href: "/collections/paithani" },
+  { label: "Tussar", href: "/collections/tussar-saree" },
+  { label: "Wedding", href: "/collections/maharani-bridal-collection" },
+  { label: "The Edit", href: "/collections/designer" },
   { label: "Collections", href: "/collections" },
   { label: "About", href: "/about" },
 ];

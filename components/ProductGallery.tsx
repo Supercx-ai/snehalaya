@@ -22,7 +22,7 @@ export default function ProductGallery({ images, title, similarQuery }: { images
               type="button"
               onClick={() => setActive(i)}
               aria-label={`View image ${i + 1}`}
-              className={`relative w-20 h-20 rounded-md overflow-hidden border-2 ${i === active ? "border-primary" : "border-transparent"}`}
+              className={`relative w-[84px] h-28 rounded-md overflow-hidden border-2 ${i === active ? "border-burgundy" : "border-transparent"}`}
             >
               <Image src={thumb.url} alt="" fill className="object-cover" />
             </button>
@@ -45,9 +45,16 @@ export default function ProductGallery({ images, title, similarQuery }: { images
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); router.push(`/search?q=${encodeURIComponent(similarQuery)}`); }}
-              className="absolute top-3 right-3 h-7 px-3 rounded-full bg-white/90 text-xs text-ink-secondary shadow-sm"
+              className="absolute top-3 right-3 flex flex-col items-center gap-1"
             >
-              View Similar
+              {/* White square icon chip + micro label — gallery corner, PDP node 2245:865 */}
+              <span className="flex h-11 w-11 items-center justify-center rounded-md bg-white shadow-sm">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <rect x="7" y="3" width="14" height="14" rx="2" />
+                  <path d="M3 7v12a2 2 0 0 0 2 2h12" />
+                </svg>
+              </span>
+              <span className="rounded-sm bg-white/95 px-1.5 py-0.5 text-[10px] text-ink shadow-sm">View Similar</span>
             </button>
           )}
         </div>

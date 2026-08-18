@@ -57,7 +57,7 @@ export default function CollectionSidebar({
       </div>
 
       <div className="p-5">
-        <button type="submit" className="w-full h-11 rounded-sm bg-primary text-cream text-sm font-medium">
+        <button type="submit" className="w-full h-11 rounded-md bg-burgundy text-cream text-sm font-medium">
           Apply Filters
         </button>
       </div>

@@ -12,6 +12,7 @@ module.exports = {
       colors: {
         primary: { DEFAULT: "#6f1e60" }, // "Find a store" active state — header, node 0:36
         accent: { DEFAULT: "#b89552" }, // active nav / INR pill border — header, node 0:9, 0:48
+        burgundy: { DEFAULT: "#67111a" }, // legal-pages hero overlay + headings — T&C page, node 2505:2277
         cream: "#faf7f2", // page/header background — header, node 0:6
         border: {
           DEFAULT: "#e8e0d5",

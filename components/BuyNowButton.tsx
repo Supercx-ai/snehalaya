@@ -28,7 +28,7 @@ export default function BuyNowButton({
         if (checkoutUrl) window.location.href = checkoutUrl;
         else setPending(false);
       }}
-      className="h-12 px-8 rounded-sm border border-primary text-primary text-sm font-medium tracking-wide2 uppercase disabled:opacity-60"
+      className="h-12 px-8 rounded-md border border-border-strong bg-white text-ink text-sm font-medium tracking-wide2 disabled:opacity-60"
     >
       {pending ? "Redirecting…" : "Buy It Now"}
     </button>

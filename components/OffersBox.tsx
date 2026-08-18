@@ -18,18 +18,16 @@ export default function OffersBox() {
 
   return (
     <div className="mt-8">
-      <h3 className="text-sm font-medium text-ink mb-3">Offers</h3>
-      <div className="border-t border-border-strong pt-4">
-        <div
-          className="flex items-center justify-between rounded-xl border border-dashed border-white/70 px-4 py-3 text-white"
-          style={{ background: "linear-gradient(90deg,#b98a8a 0%,#d9c4a0 100%)" }}
-        >
-          <button type="button" onClick={() => copy(BEST)} className="flex items-center gap-2 text-sm font-medium">
+      <h3 className="text-xl text-ink mb-3">Offers</h3>
+      <div className="border-t border-border pt-4">
+        {/* Cream coupon banner — PDP node 2245:865 (same #FFF4DF family as the Live Mirror card) */}
+        <div className="flex items-center justify-between rounded-lg bg-[#fff4df] px-4 py-3.5 text-ink">
+          <button type="button" onClick={() => copy(BEST)} className="flex items-center gap-2 text-base">
             Best Coupon: {BEST}
             <span aria-hidden>⧉</span>
-            {copied === BEST && <span className="text-xs opacity-90">Copied</span>}
+            {copied === BEST && <span className="text-xs text-ink-subtle">Copied</span>}
           </button>
-          <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center gap-1 text-sm shrink-0">
+          <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 text-base shrink-0 border-l border-[#e5d3ac] pl-4">
             + {COUPONS.length - 1} More <span aria-hidden>›</span>
           </button>
         </div>
@@ -48,8 +46,8 @@ export default function OffersBox() {
           </ul>
         )}
 
-        <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#fdf0d5] px-4 py-3">
-          <span className="text-sm font-medium text-ink">Earn 643 Cash</span>
+        <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#fff4df] px-4 py-3.5">
+          <span className="text-base text-ink">Earn 643 Cash</span>
           <span
             className="flex items-center justify-center w-4 h-4 rounded-full border border-ink-faint text-ink-faint text-[10px] leading-none"
             title="Cashback credited after delivery"

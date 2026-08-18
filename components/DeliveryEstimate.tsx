@@ -34,21 +34,21 @@ export default function DeliveryEstimate({ shipDays }: { shipDays?: string }) {
     setEditing(false);
   };
 
+  // Design (PDP node 2245:865) always shows the Standard Delivery box — fall back to a
+  // 7-day estimate when the ship_days metafield isn't set.
   const days = Number(shipDays);
-  let deliveryLine: string | null = null;
-  if (shipDays) {
-    if (Number.isFinite(days) && days > 0) {
-      const eta = new Date();
-      eta.setDate(eta.getDate() + days);
-      deliveryLine = `${ordinal(eta.getDate())} ${eta.toLocaleString("en-US", { month: "long" })}`;
-    } else {
-      deliveryLine = shipDays; // e.g. "5-7 days"
-    }
+  let deliveryLine: string;
+  if (shipDays && !(Number.isFinite(days) && days > 0)) {
+    deliveryLine = shipDays; // e.g. "5-7 days"
+  } else {
+    const eta = new Date();
+    eta.setDate(eta.getDate() + (Number.isFinite(days) && days > 0 ? days : 7));
+    deliveryLine = `${ordinal(eta.getDate())} ${eta.toLocaleString("en-US", { month: "long" })}`;
   }
 
   return (
     <div className="mt-6 space-y-3">
-      <div className="flex items-center justify-between gap-2 rounded-lg bg-[#fdf0d5] px-4 py-3 text-sm">
+      <div className="flex items-center justify-between gap-2 rounded-lg bg-[#fff4df] px-4 py-3.5 text-sm">
         <span className="flex items-center gap-2 text-ink">
           <PinIcon />
           {editing ? (
@@ -69,32 +69,28 @@ export default function DeliveryEstimate({ shipDays }: { shipDays?: string }) {
         <button
           type="button"
           onClick={() => { if (editing) savePin(); else { setDraft(pin); setEditing(true); } }}
-          className="font-medium text-primary"
+          className="font-medium text-burgundy"
         >
           {editing ? "Save" : "Change"}
         </button>
       </div>
 
-      {deliveryLine && (
-        <p className="border border-border-strong rounded-lg px-4 py-3 text-sm text-ink">
-          Standard Delivery by <strong className="font-medium text-primary">{deliveryLine}</strong>
-        </p>
-      )}
+      <p className="border border-border rounded-lg px-4 py-3.5 text-base text-ink">
+        Standard Delivery by <strong className="font-medium text-burgundy underline underline-offset-4 decoration-burgundy/40">{deliveryLine}</strong>
+      </p>
 
-      {WHATSAPP && (
-        <p className="flex items-center gap-2 text-sm text-ink-subtle">
-          <Image src="/figma/newsletter/icon-whatsapp.png" alt="" width={18} height={18} className="shrink-0" />
-          Need it by a specific date?{" "}
-          <a
-            href={`https://wa.me/${WHATSAPP}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline"
-          >
-            Chat with us
-          </a>
-        </p>
-      )}
+      {/* Always shown per the design; falls back to the store locator until WhatsApp is configured. */}
+      <p className="flex items-center gap-2 text-sm text-ink-subtle">
+        <Image src="/figma/newsletter/icon-whatsapp.png" alt="" width={18} height={18} className="shrink-0" />
+        Need it by a specific date?{" "}
+        <a
+          href={WHATSAPP ? `https://wa.me/${WHATSAPP}` : "/store-locator"}
+          {...(WHATSAPP ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          className="text-burgundy underline"
+        >
+          Chat with us
+        </a>
+      </p>
     </div>
   );
 }

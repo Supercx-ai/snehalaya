@@ -18,7 +18,7 @@ export default function NewArrivals({ products }: { products: Product[] }) {
           <p className="mt-1 text-base text-ink-subtle">Freshly added sarees, selected for you.</p>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/collections/new-arrivals" className="text-2xs tracking-wide2 uppercase text-primary">View All</Link>
+          <Link href="/collections/new-arrival" className="text-2xs tracking-wide2 uppercase text-primary">View All</Link>
           <div className="hidden md:block">
             <ScrollButtons onPrev={() => scrollByCard(-1)} onNext={() => scrollByCard(1)} />
           </div>
@@ -32,7 +32,7 @@ export default function NewArrivals({ products }: { products: Product[] }) {
       </div>
       {products.length > 4 && (
         <div className="text-center mt-8 md:hidden">
-          <Link href="/collections/new-arrivals" className="inline-flex items-center justify-center h-[41px] px-8 rounded-sm bg-primary text-cream text-2xs font-semibold tracking-wide2 uppercase">
+          <Link href="/collections/new-arrival" className="inline-flex items-center justify-center h-[41px] px-8 rounded-sm bg-primary text-cream text-2xs font-semibold tracking-wide2 uppercase">
             Explore Collection
           </Link>
         </div>

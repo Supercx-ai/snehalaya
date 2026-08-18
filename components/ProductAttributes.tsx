@@ -15,18 +15,20 @@ const ROWS: { key: keyof ProductMetafields; label: string }[] = [
   { key: "ship_days", label: "Ships in" },
 ];
 
-// Renders only the fields that actually have a value — most will be empty until
-// the store owner fills in Admin → Custom data → Products.
-export default function ProductAttributes({ metafields }: { metafields: ProductMetafields }) {
+// Renders the fields that actually have a value — most will be empty until the store
+// owner fills in Admin → Custom data → Products. The design always shows the accordion,
+// so with no metafields it falls back to the product description.
+export default function ProductAttributes({ metafields, description }: { metafields: ProductMetafields; description?: string }) {
   const rows = ROWS.filter((r) => metafields[r.key]);
   const isSilk = metafields.silk_mark === "true";
   const hasGI = metafields.gi_tag === "true";
 
-  if (rows.length === 0 && !isSilk && !hasGI && !metafields.craft_story && !metafields.care_instructions) return null;
+  const empty = rows.length === 0 && !isSilk && !hasGI && !metafields.craft_story && !metafields.care_instructions;
+  if (empty && !description) return null;
 
   return (
-    <details className="group border-t border-border-strong py-4">
-      <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-ink">
+    <details className="group border-t border-border py-5">
+      <summary className="flex items-center justify-between cursor-pointer list-none text-xl text-ink">
         Product Details
         <svg viewBox="0 0 24 24" aria-hidden className="w-4 h-4 text-ink-faint transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 9l6 6 6-6" />
@@ -34,6 +36,7 @@ export default function ProductAttributes({ metafields }: { metafields: ProductM
       </summary>
 
       <div className="mt-4">
+        {empty && description && <p className="text-sm text-ink-subtle leading-relaxed">{description}</p>}
         {(isSilk || hasGI) && (
           <div className="flex gap-2 mb-3">
             {isSilk && <Badge className="bg-[#fff3cd] text-[#7a5c00]">Silk Mark Certified</Badge>}

@@ -4,9 +4,9 @@ import Link from "next/link";
 // Two of five link to real collections we already have; the rest have no dedicated
 // collection yet, so they fall back to free-text /search (same pattern used elsewhere).
 const OCCASIONS = [
-  { label: "Bridal & Muhurtham", caption: "Kanjivaram · premium silk", image: "/figma/occasions/bridal.png", href: "/collections/bridal-muhurtham", size: "large" },
-  { label: "Wedding Guest", caption: "Elegant, understated", image: "/figma/occasions/wedding-guest.png", href: "/collections/wedding-guest", size: "small" },
-  { label: "Festival", caption: "Pongal · Diwali · Navratri", image: "/figma/occasions/festival.png", href: "/collections/festival-occasion", size: "small" },
+  { label: "Bridal & Muhurtham", caption: "Kanjivaram · premium silk", image: "/figma/occasions/bridal.png", href: "/collections/maharani-bridal-collection", size: "large" },
+  { label: "Wedding Guest", caption: "Elegant, understated", image: "/figma/occasions/wedding-guest.png", href: "/collections/designer", size: "small" },
+  { label: "Festival", caption: "Pongal · Diwali · Navratri", image: "/figma/occasions/festival.png", href: "/collections/festive-kanjivarams", size: "small" },
   { label: "Party", caption: "Contemporary drapes", image: "/figma/occasions/party.png", href: "/search?q=party", size: "small" },
   { label: "Everyday / Office", caption: "Cotton · silk-cotton", image: "/figma/occasions/everyday.png", href: "/search?q=everyday", size: "small" },
 ] as const;

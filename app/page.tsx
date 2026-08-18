@@ -27,9 +27,9 @@ export default async function Home() {
   const [colours, fabrics, newArrivals, trending, snehasPicks] = await Promise.all([
     getColorFilterValues(),
     getFabricFilterValues(),
-    getCollection("new-arrivals", { first: 10, sortKey: "CREATED", reverse: true }),
-    getCollection("new-arrivals", { first: 8, sortKey: "BEST_SELLING" }),
-    getCollection("festival-occasion", { first: 8 }),
+    getCollection("new-arrival", { first: 10, sortKey: "CREATED", reverse: true }),
+    getCollection("new-arrival", { first: 8, sortKey: "BEST_SELLING" }),
+    getCollection("festive-kanjivarams", { first: 8 }),
   ]);
   const newArrivalProducts = newArrivals?.products.nodes ?? [];
   // Show 2 different products in the promo card when the catalogue is large enough;
