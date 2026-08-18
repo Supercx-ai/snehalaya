@@ -17,12 +17,22 @@ export default function InfiniteProducts({
   cursor,
   hasNext,
   loadMore,
+  plp,
+  saleOnly,
+  keywordGroups,
+  minDiscount,
 }: {
   resetKey: string;
   initial: Product[];
   cursor: string | null;
   hasNext: boolean;
   loadMore: (cursor: string) => Promise<Page>;
+  plp?: boolean;
+  saleOnly?: boolean;
+  /** Client-side keyword filter: OR within each group, AND across groups. */
+  keywordGroups?: string[][];
+  /** Client-side minimum discount %, computed from compareAt prices. */
+  minDiscount?: number;
 }) {
   const [items, setItems] = useState(initial);
   const [nextCursor, setNextCursor] = useState(cursor);
@@ -59,9 +69,37 @@ export default function InfiniteProducts({
     return () => observer.disconnect();
   }, [more, nextCursor, pending, loadMore]);
 
+  // Client-side filters (On Sale chip, Occasion/Pattern/Work/Size keywords, Discount %):
+  // Shopify's Storefront API can't express these, so hide non-matching items from the
+  // accumulated list; infinite scroll keeps fetching to fill the gap.
+  const hasClientFilter = saleOnly || (keywordGroups?.length ?? 0) > 0 || minDiscount != null;
+  const visible = hasClientFilter
+    ? items.filter((p) => {
+        const compare = p.compareAtPriceRange?.minVariantPrice;
+        const price = Number(p.priceRange.minVariantPrice.amount);
+        const compareAmt = compare ? Number(compare.amount) : 0;
+        const discounted = compareAmt > price;
+        if (saleOnly && !discounted) return false;
+        if (minDiscount != null) {
+          if (!discounted) return false;
+          if (((compareAmt - price) / compareAmt) * 100 < minDiscount) return false;
+        }
+        if (keywordGroups?.length) {
+          const haystack = `${p.title} ${p.weaveType?.value ?? ""} ${(p.tags ?? []).join(" ")}`.toLowerCase();
+          for (const group of keywordGroups) {
+            if (!group.some((kw) => haystack.includes(kw.toLowerCase()))) return false;
+          }
+        }
+        return true;
+      })
+    : items;
+
   return (
     <>
-      <ProductGrid products={items} />
+      <ProductGrid products={visible} plp={plp} />
+      {hasClientFilter && visible.length === 0 && !more && (
+        <p className="py-16 text-center text-sm text-ink-subtle">No products match these filters right now.</p>
+      )}
       {more && <div ref={sentinel} style={{ textAlign: "center", padding: "2rem", color: "#999" }}>{pending ? "Loading…" : ""}</div>}
     </>
   );

@@ -74,6 +74,7 @@ export type Product = {
   priceRange: { minVariantPrice: Money };
   compareAtPriceRange: { minVariantPrice: Money } | null;
   weaveType: { value: string } | null;
+  productType: string;
   variants: { nodes: { id: string; availableForSale: boolean }[] };
   tags: string[];
 };
@@ -141,6 +142,7 @@ const PRODUCT_FIELDS = `
   priceRange { minVariantPrice { amount currencyCode } }
   compareAtPriceRange { minVariantPrice { amount currencyCode } }
   weaveType: metafield(namespace: "custom", key: "weave_type") { value }
+  productType
   variants(first: 1) { nodes { id availableForSale } }
   tags
 `;
@@ -194,17 +196,17 @@ export function getProducts(first = 24) {
 }
 
 // Cursor-paginated page of products, for "load more" / lazy loading.
-export function getProductsPage(first = 12, after?: string) {
+export function getProductsPage(first = 12, after?: string, sortKey?: string, reverse?: boolean) {
   return shopifyFetch<{
     products: { nodes: Product[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } };
   }>(
-    `query ProductsPage($first: Int!, $after: String) {
-      products(first: $first, after: $after) {
+    `query ProductsPage($first: Int!, $after: String, $sortKey: ProductSortKeys, $reverse: Boolean) {
+      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse) {
         nodes { ${PRODUCT_FIELDS} }
         pageInfo { hasNextPage endCursor }
       }
     }`,
-    { first, after },
+    { first, after, sortKey, reverse },
     { tags: ["products"] }
   ).then((d) => d.products);
 }

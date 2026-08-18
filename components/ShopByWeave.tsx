@@ -17,7 +17,37 @@ const WEAVES = [
   { label: "Tussara", image: "/figma/weaves/tussara.png", from: "rgb(241,142,105)", to: "rgb(131,78,70)" },
 ] as const;
 
-export default function ShopByWeave() {
+// PLP comp (MacBook Air - 5): the tiles there are richer than the homepage strip —
+// mandala pattern in the gradient, model popping out over the inner white frame.
+// That art is baked into per-tile captures (cream headroom included, so they sit
+// seamlessly on the PLP's bg-cream page).
+const PLP_TILES = [
+  { label: "Linen", image: "/figma/plp/weave-linen.jpg" },
+  { label: "Kanchipuram Silk", image: "/figma/plp/weave-kanchipuram.jpg" },
+  { label: "Banarasi", image: "/figma/plp/weave-banarasi.jpg" },
+  { label: "Kota", image: "/figma/plp/weave-kota.jpg" },
+  { label: "Chettinad Cotton", image: "/figma/plp/weave-chettinad.jpg" },
+  { label: "Tussara", image: "/figma/plp/weave-tussara.jpg" },
+] as const;
+
+export default function ShopByWeave({ bare }: { bare?: boolean }) {
+  if (bare) {
+    // Tiles stay at the comp's ~183px size (per feedback: no proportional scale-up);
+    // justify-between spreads the fixed-size tiles across the fluid row.
+    return (
+      <div className="flex gap-4 lg:justify-between overflow-x-auto pb-2 [scrollbar-width:none]">
+        {PLP_TILES.map((w) => (
+          <Link key={w.label} href={`/search?q=${encodeURIComponent(w.label)}`} className="block w-[140px] md:w-[183px] shrink-0">
+            <div className="relative aspect-[162/188]">
+              <Image src={w.image} alt={w.label} fill className="object-cover" />
+            </div>
+            <p className="mt-1 text-center text-lg text-ink">{w.label}</p>
+          </Link>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <section className="max-w-[1280px] mx-auto pl-4 md:px-8 py-12">
       {/* Mobile Figma keeps this as a horizontal-scroll strip, not a stacked grid — it

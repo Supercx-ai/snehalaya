@@ -27,7 +27,7 @@ export default function SortSelect({ basePath, currentSort, baseQuery }: { baseP
       <select
         defaultValue={currentSort}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none h-11 pl-4 pr-9 rounded-full border border-border-strong bg-white text-sm text-ink cursor-pointer"
+        className="appearance-none h-9 w-full md:w-[293px] pl-4 pr-9 rounded-[7px] border border-[#e6e6e6] bg-white text-sm text-ink cursor-pointer"
       >
         {SORT_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>Sort By : {o.label}</option>

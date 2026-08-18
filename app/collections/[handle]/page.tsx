@@ -6,9 +6,11 @@ import { loadMoreCollectionProducts } from "@/lib/collection";
 import { generateCollectionStructuredData, generateBreadcrumbStructuredData } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
 import InfiniteProducts from "@/components/InfiniteProducts";
-import CollectionSidebar from "@/components/CollectionSidebar";
+import CollectionSidebar, { KEYWORD_GROUPS } from "@/components/CollectionSidebar";
 import SortSelect from "@/components/SortSelect";
 import FilterForm from "@/components/FilterForm";
+import PlpChips from "@/components/PlpChips";
+import ShopByWeave from "@/components/ShopByWeave";
 
 export const revalidate = 3600; // ISR: rebuild at most hourly; product-update webhook busts it sooner
 
@@ -33,35 +35,52 @@ const SORTS: Record<string, { sortKey?: string; reverse?: boolean; label: string
   newest: { sortKey: "CREATED", reverse: true, label: "Newest" },
 };
 
+type SP = Record<string, string | string[] | undefined>;
+const asList = (v: string | string[] | undefined) => (v ? (Array.isArray(v) ? v : [v]) : []);
+const asOne = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+// Full current query string from every param — callers drop/replace single keys.
+function buildQuery(sp: SP, omit: string[] = []) {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(sp)) {
+    if (v === undefined || omit.includes(k)) continue;
+    asList(v).forEach((x) => params.append(k, x));
+  }
+  return params;
+}
+
 export default async function CollectionPage({
   params,
   searchParams,
 }: {
   params: Promise<{ handle: string }>;
-  searchParams: Promise<{ f?: string | string[]; minPrice?: string; maxPrice?: string; sort?: string }>;
+  searchParams: Promise<SP>;
 }) {
   const { handle } = await params;
   const sp = await searchParams;
 
-  const selectedInputs = sp.f ? (Array.isArray(sp.f) ? sp.f : [sp.f]) : [];
+  const selectedInputs = asList(sp.f);
   const filters = selectedInputs.map((f) => JSON.parse(f));
-  if (sp.minPrice || sp.maxPrice) {
-    filters.push({ price: { min: sp.minPrice ? Number(sp.minPrice) : undefined, max: sp.maxPrice ? Number(sp.maxPrice) : undefined } });
+  const minPrice = asOne(sp.minPrice);
+  const maxPrice = asOne(sp.maxPrice);
+  if (minPrice || maxPrice) {
+    filters.push({ price: { min: minPrice ? Number(minPrice) : undefined, max: maxPrice ? Number(maxPrice) : undefined } });
   }
-  const sort = (sp.sort && SORTS[sp.sort]) || undefined;
+  const sortParam = asOne(sp.sort) ?? "";
+  const sort = SORTS[sortParam];
+  const disc = asOne(sp.disc);
 
-  const collection = await getCollection(handle, { first: 12, filters, sortKey: sort?.sortKey, reverse: sort?.reverse });
+  const keywordSelections = Object.fromEntries(KEYWORD_GROUPS.map((g) => [g.param, asList(sp[g.param])]));
+  const keywordGroups = Object.values(keywordSelections).filter((g) => g.length > 0);
+
+  const [collection, collections] = await Promise.all([
+    getCollection(handle, { first: 12, filters, sortKey: sort?.sortKey, reverse: sort?.reverse }),
+    getCollections(50),
+  ]);
   if (!collection) notFound();
 
   const { nodes, filters: availableFilters, pageInfo } = collection.products;
   const url = `${SITE_URL}/collections/${handle}`;
-
-  // Carries the current filter/price selection into SortSelect so a sort change
-  // re-navigates without dropping whatever's already applied.
-  const baseQuery = new URLSearchParams();
-  selectedInputs.forEach((f) => baseQuery.append("f", f));
-  if (sp.minPrice) baseQuery.set("minPrice", sp.minPrice);
-  if (sp.maxPrice) baseQuery.set("maxPrice", sp.maxPrice);
 
   return (
     <>
@@ -74,31 +93,54 @@ export default async function CollectionPage({
         ]),
       ]}
     />
-    <main className="bg-white">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-9 py-8">
-        <nav className="flex items-center gap-1.5 text-xs text-ink-faint">
-          <Link href="/" className="hover:text-ink">Home</Link>
-          <span>/</span>
-          <span className="text-ink-secondary">{collection.title}</span>
-        </nav>
+    {/* PLP comp (MacBook Air - 5, node 2239-11): cream page, 30px gutters, fluid width. */}
+    <main className="bg-cream">
+      <div className="px-4 md:px-[30px] py-6 md:py-8">
+        <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+          <nav className="flex items-center gap-1.5 text-xs text-ink-faint">
+            <Link href="/" className="hover:text-ink">Home</Link>
+            <span>/</span>
+            <Link href="/collections" className="hover:text-ink">Collections</Link>
+            <span>/</span>
+            <span className="text-ink-secondary">{collection.title}</span>
+          </nav>
+          <h1 className="text-md font-semibold text-ink">{collection.title}</h1>
+        </div>
+        {collection.description && (
+          <p className="mt-2 max-w-[720px] text-sm text-ink-subtle">{collection.description}</p>
+        )}
 
-        <h1 className="mt-3 font-display font-light text-heading-sm md:text-heading-lg text-ink">{collection.title}</h1>
-        {collection.description && <p className="mt-2 max-w-[720px] text-base text-ink-subtle">{collection.description}</p>}
+        <div className="mt-4">
+          <ShopByWeave bare />
+        </div>
 
-        <FilterForm basePath={`/collections/${handle}`} className="mt-8 flex flex-col md:flex-row gap-8 items-start">
-          <input type="hidden" name="sort" value={sp.sort ?? ""} />
-          <aside className="w-full md:w-[260px] shrink-0 md:sticky md:top-24">
+        <FilterForm
+          basePath={`/collections/${handle}`}
+          className="mt-6 flex flex-col lg:grid lg:grid-cols-[272px_1fr] gap-6 items-start"
+        >
+          <input type="hidden" name="sort" value={sortParam} />
+          {sp.sale && <input type="hidden" name="sale" value={asOne(sp.sale)} />}
+          <aside className="w-full lg:sticky lg:top-24">
             <CollectionSidebar
               filters={availableFilters}
               selectedInputs={selectedInputs}
-              minPrice={sp.minPrice}
-              maxPrice={sp.maxPrice}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              collections={collections.filter((c) => c.handle !== handle).map((c) => ({ handle: c.handle, title: c.title }))}
+              keywordSelections={keywordSelections}
+              discount={disc}
             />
           </aside>
 
           <div className="flex-1 min-w-0 w-full">
-            <div className="flex justify-end mb-6">
-              <SortSelect basePath={`/collections/${handle}`} currentSort={sp.sort ?? ""} baseQuery={baseQuery.toString()} />
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <PlpChips
+                basePath={`/collections/${handle}`}
+                query={buildQuery(sp).toString()}
+                currentSort={sortParam}
+                saleActive={Boolean(sp.sale)}
+              />
+              <SortSelect basePath={`/collections/${handle}`} currentSort={sortParam} baseQuery={buildQuery(sp, ["sort"]).toString()} />
             </div>
 
             <InfiniteProducts
@@ -108,6 +150,10 @@ export default async function CollectionPage({
               cursor={pageInfo.endCursor}
               hasNext={pageInfo.hasNextPage}
               loadMore={loadMoreCollectionProducts.bind(null, handle, filters, sort?.sortKey, sort?.reverse)}
+              plp
+              saleOnly={Boolean(sp.sale)}
+              keywordGroups={keywordGroups}
+              minDiscount={disc ? Number(disc) : undefined}
             />
           </div>
         </FilterForm>

@@ -8,9 +8,27 @@ import WishlistHeart from "./WishlistHeart";
 import LocalizedPrice from "./LocalizedPrice";
 import { useCart } from "./CartProvider";
 
+// The PLP comp shows a gold weave/category label above every product name
+// (Kanjivaram, Chanderi, Paithani…). Most products on this store have no
+// weave_type metafield, but their titles name the weave — so derive it:
+// metafield → weave keyword from the title → Shopify productType.
+const CATEGORY_KEYWORDS = [
+  "Kanjivaram", "Kanchipuram", "Kanchi", "Banarasi", "Banaras", "Chanderi",
+  "Paithani", "Tussar", "Tussara", "Kota", "Chettinad", "Gadwal", "Organza",
+  "Chiffon", "Georgette", "Linen", "Mangalgiri", "Narayanpet", "Venkatagiri",
+  "Cotton", "Silk",
+];
+
+function deriveCategory(p: Product): string | null {
+  if (p.weaveType?.value) return p.weaveType.value;
+  const title = p.title.toLowerCase();
+  const hit = CATEGORY_KEYWORDS.find((k) => title.includes(k.toLowerCase()));
+  return hit ?? (p.productType || null);
+}
+
 export default function ProductCard({
-  product: p, showNewBadge, fluid, fullWidth, quickAdd,
-}: { product: Product; showNewBadge?: boolean; fluid?: boolean; fullWidth?: boolean; quickAdd?: boolean }) {
+  product: p, showNewBadge, fluid, fullWidth, quickAdd, plp,
+}: { product: Product; showNewBadge?: boolean; fluid?: boolean; fullWidth?: boolean; quickAdd?: boolean; plp?: boolean }) {
   const router = useRouter();
   const { addLine } = useCart();
   const firstVariant = p.variants.nodes[0];
@@ -23,7 +41,7 @@ export default function ProductCard({
 
   return (
     <Link href={`/products/${p.handle}`} className={`group block ${widthClass}`}>
-      <div className="relative rounded-card overflow-hidden bg-border-subtle aspect-[264/352]">
+      <div className={`relative overflow-hidden bg-border-subtle ${plp ? "rounded-[10px] aspect-[289/386]" : "rounded-card aspect-[264/352]"}`}>
         {p.featuredImage && (
           <Image src={p.featuredImage.url} alt={p.featuredImage.altText ?? p.title} fill className="object-cover" />
         )}
@@ -39,9 +57,16 @@ export default function ProductCard({
           />
         </div>
         {showNewBadge && (
-          <span className="absolute bottom-3 left-3 bg-primary text-cream text-tiny tracking-wide2 uppercase px-2 py-0.5 rounded-sm">
-            New
-          </span>
+          plp ? (
+            // PLP comp (MacBook Air - 5): larger burgundy pill, sentence case
+            <span className="absolute bottom-3 left-3 bg-burgundy text-white text-sm px-3 py-1 rounded-[6px]">
+              New
+            </span>
+          ) : (
+            <span className="absolute bottom-3 left-3 bg-primary text-cream text-tiny tracking-wide2 uppercase px-2 py-0.5 rounded-sm">
+              New
+            </span>
+          )
         )}
         {/* White "On Sale" pill, top-left — image-search results grid, node 2467:2 */}
         {onSale && (
@@ -63,6 +88,7 @@ export default function ProductCard({
             +
           </button>
         )}
+        {!plp && (
         <button
           type="button"
           onClick={(e) => {
@@ -80,7 +106,26 @@ export default function ProductCard({
             <Image src="/figma/icon-image-search.svg" alt="" width={16} height={16} />
           </span>
         </button>
+        )}
       </div>
+      {plp ? (
+        /* PLP comp meta: category Manrope 14/1.5px gold, title Cormorant 19, price Manrope Medium 14 —
+           fixed at the comp's sizes (per feedback: no proportional scale-up on this page). */
+        <div className="mt-3.5">
+          {deriveCategory(p) && (
+            <p className="text-base tracking-[1.5px] text-accent">{deriveCategory(p)}</p>
+          )}
+          <p className="mt-1.5 font-display text-[19px] leading-[1.3] text-ink">{p.title}</p>
+          <p className="mt-2 text-base font-medium text-ink flex items-baseline gap-2.5">
+            <LocalizedPrice handle={p.handle} amount={p.priceRange.minVariantPrice.amount} currencyCode={p.priceRange.minVariantPrice.currencyCode} format="currency" />
+            {onSale && compareAt && (
+              <span className="font-normal text-[#999999] line-through">
+                <LocalizedPrice handle={p.handle} amount={compareAt.amount} currencyCode={compareAt.currencyCode} format="currency" />
+              </span>
+            )}
+          </p>
+        </div>
+      ) : (
       <div className="mt-3">
         {p.weaveType?.value && <p className="text-label tracking-wide2 text-accent uppercase">{p.weaveType.value}</p>}
         <p className="mt-1 font-display text-card-title text-ink">{p.title}</p>
@@ -93,6 +138,7 @@ export default function ProductCard({
           )}
         </p>
       </div>
+      )}
     </Link>
   );
 }

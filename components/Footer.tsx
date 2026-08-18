@@ -16,10 +16,9 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     ],
   },
   {
-    // ponytail: Contact Us routes through WhatsApp, the site's real contact channel.
     title: "Help",
     links: [
-      { label: "Contact Us" },
+      { label: "Contact Us", href: "/contact-us" },
       { label: "Shipping Details", href: "/shipping-policy" },
       { label: "Returns & Exchanges", href: "/returns-exchange" },
       { label: "FAQs", href: "/faq" },
@@ -82,8 +81,6 @@ export default function Footer() {
                 <li key={l.label} className="text-sm text-ink tracking-wide">
                   {l.href ? (
                     <Link href={l.href}>{l.label}</Link>
-                  ) : l.label === "Contact Us" && whatsappHref ? (
-                    <a href={whatsappHref} target="_blank" rel="noopener noreferrer">{l.label}</a>
                   ) : (l.label === "Virtual Shopping" || l.label === "Book a Session") && whatsappHref ? (
                     <a href={whatsappHref} target="_blank" rel="noopener noreferrer">{l.label}</a>
                   ) : (
