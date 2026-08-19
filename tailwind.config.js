@@ -10,7 +10,7 @@ module.exports = {
         xs: "400px", // narrow-phone breakpoint — lets a couple of components fit 2-up before Tailwind's default sm (640px)
       },
       colors: {
-        primary: { DEFAULT: "#6f1e60" }, // "Find a store" active state — header, node 0:36
+        primary: { DEFAULT: "#67111a" }, // maroon — unified with burgundy per brand (was purple #6f1e60)
         accent: { DEFAULT: "#b89552" }, // active nav / INR pill border — header, node 0:9, 0:48
         burgundy: { DEFAULT: "#67111a" }, // legal-pages hero overlay + headings — T&C page, node 2505:2277
         cream: "#faf7f2", // page/header background — header, node 0:6

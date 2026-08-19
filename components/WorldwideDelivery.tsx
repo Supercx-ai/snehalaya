@@ -3,14 +3,14 @@ import Link from "next/link";
 
 // "Snehalayaa, Delivered Worldwide" band — homepage node 2056:6196 (between Worn & Loved
 // and the founder section). Left third is the gold-silk drape (2x export of the design's
-// Background image); the rest is deep purple #4A074C with three assurance cards.
+// Background image); the rest is deep purple #67111a with three assurance cards.
 
 function GlobeIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="size-8" aria-hidden>
       <circle cx="11" cy="10" r="7.5" />
       <path d="M3.5 10h15M11 2.5c2.4 2 3.6 4.7 3.6 7.5S13.4 15.5 11 17.5c-2.4-2-3.6-4.7-3.6-7.5S8.6 4.5 11 2.5Z" />
-      <rect x="14" y="13.5" width="7" height="6.5" rx="1" fill="#4A074C" />
+      <rect x="14" y="13.5" width="7" height="6.5" rx="1" fill="#67111a" />
       <path d="M15.6 13.5v-1a1.9 1.9 0 0 1 3.8 0v1" />
     </svg>
   );
@@ -61,7 +61,7 @@ const CARDS = [
 
 export default function WorldwideDelivery() {
   return (
-    <section className="relative overflow-hidden bg-[#4A074C] text-cream">
+    <section className="relative overflow-hidden bg-[#67111a] text-cream">
       {/* Gold silk drape — left third on desktop, a soft top banner behind content on mobile. */}
       <div className="absolute inset-y-0 left-0 w-full sm:w-[42%] lg:w-[34%]">
         <Image
@@ -71,7 +71,7 @@ export default function WorldwideDelivery() {
           className="object-cover object-center opacity-20 sm:opacity-100"
           sizes="(min-width: 1024px) 34vw, (min-width: 640px) 42vw, 100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#4A074C] sm:to-[#4A074C]/95" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#67111a] sm:to-[#67111a]/95" />
       </div>
       {/* Faint mandala glow on the right, matching the design's botanical watermark. */}
       <div className="pointer-events-none absolute -right-40 top-1/2 -translate-y-1/2 size-[560px] rounded-full bg-[radial-gradient(circle,rgba(217,184,113,0.10),transparent_62%)]" />
