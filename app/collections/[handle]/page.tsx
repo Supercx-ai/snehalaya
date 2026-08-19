@@ -7,6 +7,7 @@ import { generateCollectionStructuredData, generateBreadcrumbStructuredData } fr
 import JsonLd from "@/components/JsonLd";
 import InfiniteProducts from "@/components/InfiniteProducts";
 import CollectionSidebar, { KEYWORD_GROUPS } from "@/components/CollectionSidebar";
+import MobileFilterToggle from "@/components/MobileFilterToggle";
 import SortSelect from "@/components/SortSelect";
 import FilterForm from "@/components/FilterForm";
 import PlpChips from "@/components/PlpChips";
@@ -115,7 +116,7 @@ export default async function CollectionPage({
         >
           <input type="hidden" name="sort" value={sortParam} />
           {sp.sale && <input type="hidden" name="sale" value={asOne(sp.sale)} />}
-          <aside className="w-full lg:sticky lg:top-24">
+          <MobileFilterToggle>
             <CollectionSidebar
               filters={availableFilters}
               selectedInputs={selectedInputs}
@@ -126,7 +127,7 @@ export default async function CollectionPage({
               discount={disc}
               showApply={false}
             />
-          </aside>
+          </MobileFilterToggle>
 
           <div className="flex-1 min-w-0 w-full">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

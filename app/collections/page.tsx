@@ -4,6 +4,7 @@ import { getCollections, getProductsPage } from "@/lib/shopify";
 import { loadMoreAllProducts } from "@/lib/products";
 import InfiniteProducts from "@/components/InfiniteProducts";
 import CollectionSidebar, { KEYWORD_GROUPS } from "@/components/CollectionSidebar";
+import MobileFilterToggle from "@/components/MobileFilterToggle";
 import SortSelect from "@/components/SortSelect";
 import FilterForm from "@/components/FilterForm";
 import PlpChips from "@/components/PlpChips";
@@ -71,7 +72,7 @@ export default async function CollectionsIndex({ searchParams }: { searchParams:
         <FilterForm basePath="/collections" className="mt-10 flex flex-col lg:grid lg:grid-cols-[272px_minmax(0,1fr)] gap-x-6 gap-y-6 items-start">
           <input type="hidden" name="sort" value={sortParam} />
           {sp.sale && <input type="hidden" name="sale" value={asOne(sp.sale)} />}
-          <aside className="w-full lg:sticky lg:top-24">
+          <MobileFilterToggle>
             {/* Facet/price filters need a collection context in the Storefront API — the
                 all-products rail gets Sub Category links + the keyword/discount groups. */}
             <CollectionSidebar
@@ -82,7 +83,7 @@ export default async function CollectionsIndex({ searchParams }: { searchParams:
               discount={disc}
               showApply={false}
             />
-          </aside>
+          </MobileFilterToggle>
 
           <div className="flex-1 min-w-0 w-full">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

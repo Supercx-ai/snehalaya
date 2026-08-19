@@ -9,7 +9,9 @@ export default function Hero() {
         alt="Woman draped in a handwoven silk saree"
         fill
         priority
-        className="object-cover"
+        // Wide 16:9 source with the models' heads near the top — anchor the crop high so
+        // object-cover never clips their heads on wide viewports.
+        className="object-cover object-top"
       />
       <div className="absolute inset-0 bg-overlay" />
 

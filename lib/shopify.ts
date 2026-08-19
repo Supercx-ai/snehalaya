@@ -379,19 +379,21 @@ export function getFabricFilterValues() {
 // Full results page — same filter/sort shape as collections, reuses ProductFilter/FilterValue.
 export function searchProducts(
   query: string,
-  opts: { first?: number; after?: string; filters?: Record<string, unknown>[] } = {}
+  opts: { first?: number; after?: string; filters?: Record<string, unknown>[]; sortKey?: string; reverse?: boolean } = {}
 ) {
+  // The Storefront `search` connection only sorts by RELEVANCE or PRICE — collection
+  // sort keys like BEST_SELLING/CREATED aren't valid here, so callers pass a search key.
   return shopifyFetch<{
     search: { edges: { node: Product }[]; productFilters: ProductFilter[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } };
   }>(
-    `query Search($query: String!, $first: Int!, $after: String, $filters: [ProductFilter!]) {
-      search(query: $query, types: [PRODUCT], first: $first, after: $after, productFilters: $filters) {
+    `query Search($query: String!, $first: Int!, $after: String, $filters: [ProductFilter!], $sortKey: SearchSortKeys, $reverse: Boolean) {
+      search(query: $query, types: [PRODUCT], first: $first, after: $after, productFilters: $filters, sortKey: $sortKey, reverse: $reverse) {
         edges { node { ... on Product { ${PRODUCT_FIELDS} } } }
         productFilters { id label type values { id label count input } }
         pageInfo { hasNextPage endCursor }
       }
     }`,
-    { query, first: opts.first ?? 24, after: opts.after, filters: opts.filters ?? [] },
+    { query, first: opts.first ?? 24, after: opts.after, filters: opts.filters ?? [], sortKey: opts.sortKey, reverse: opts.reverse },
     { tags: ["products"] }
   ).then((d) => ({
     nodes: d.search.edges.map((e) => e.node),

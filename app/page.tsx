@@ -15,6 +15,7 @@ import MaharaniPromo from "@/components/MaharaniPromo";
 import LiveShoppingPromo from "@/components/LiveShoppingPromo";
 import ShopTheLook from "@/components/ShopTheLook";
 import WornAndLoved from "@/components/WornAndLoved";
+import WorldwideDelivery from "@/components/WorldwideDelivery";
 import FeaturedIn from "@/components/FeaturedIn";
 import OurStores from "@/components/OurStores";
 import TrustStats from "@/components/TrustStats";
@@ -52,6 +53,7 @@ export default async function Home() {
       <ShopTheLook />
       <InstagramFeed />
       <WornAndLoved />
+      <WorldwideDelivery />
       <BrandAmbassador />
       <FeaturedIn />
       <OurStores />

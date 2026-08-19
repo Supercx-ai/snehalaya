@@ -1,7 +1,9 @@
-import Link from "next/link";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { searchProducts, getCollections } from "@/lib/shopify";
 import { loadMoreWeaveResults } from "@/lib/search";
+import { WEAVES, getWeave } from "@/lib/weaves";
 import InfiniteProducts from "@/components/InfiniteProducts";
 import CollectionSidebar, { KEYWORD_GROUPS } from "@/components/CollectionSidebar";
 import MobileFilterToggle from "@/components/MobileFilterToggle";
@@ -10,9 +12,21 @@ import FilterForm from "@/components/FilterForm";
 import PlpChips from "@/components/PlpChips";
 import ShopByWeave from "@/components/ShopByWeave";
 
-export const metadata: Metadata = { title: "Search", robots: { index: false } };
+export const revalidate = 3600; // ISR: rebuild at most hourly; product webhook busts it sooner
 
-// Search only sorts by RELEVANCE or PRICE; best-selling/newest fall back to relevance.
+export function generateStaticParams() {
+  return WEAVES.map((w) => ({ weave: w.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ weave: string }> }): Promise<Metadata> {
+  const { weave } = await params;
+  const w = getWeave(weave);
+  if (!w) return {};
+  return { title: `${w.label} Sarees`, description: `Shop ${w.label} sarees at Snehalayaa Silks.` };
+}
+
+// Search only sorts by RELEVANCE or PRICE, so best-selling/newest fall back to relevance
+// (the SortSelect still lists them for parity with the collection PLP).
 const SORTS: Record<string, { sortKey?: string; reverse?: boolean }> = {
   "price-asc": { sortKey: "PRICE", reverse: false },
   "price-desc": { sortKey: "PRICE", reverse: true },
@@ -31,9 +45,17 @@ function buildQuery(sp: SP, omit: string[] = []) {
   return params;
 }
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<SP> }) {
+export default async function WeavePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ weave: string }>;
+  searchParams: Promise<SP>;
+}) {
+  const { weave } = await params;
+  const w = getWeave(weave);
+  if (!w) notFound();
   const sp = await searchParams;
-  const q = (asOne(sp.q) ?? "").trim();
 
   const selectedInputs = asList(sp.f);
   const filters = selectedInputs.map((f) => JSON.parse(f));
@@ -50,14 +72,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const keywordGroups = Object.values(keywordSelections).filter((g) => g.length > 0);
 
   const [results, collections] = await Promise.all([
-    q
-      ? searchProducts(q, { first: 12, filters, sortKey: sort?.sortKey, reverse: sort?.reverse })
-      : Promise.resolve({ nodes: [], filters: [], pageInfo: { hasNextPage: false, endCursor: null } }),
+    searchProducts(w.query, { first: 12, filters, sortKey: sort?.sortKey, reverse: sort?.reverse }),
     getCollections(50),
   ]);
 
   const { nodes, filters: availableFilters, pageInfo } = results;
-  const basePath = "/search";
+  const basePath = `/weaves/${w.slug}`;
 
   return (
     <main className="bg-cream">
@@ -65,11 +85,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <nav className="flex items-center gap-1.5 text-[11px] text-[#999]">
           <Link href="/" className="hover:text-ink">Home</Link>
           <span>/</span>
-          <span className="text-[#666]">{q ? `Search: “${q}”` : "Search"}</span>
+          <Link href="/collections" className="hover:text-ink">Collections</Link>
+          <span>/</span>
+          <span className="text-[#666]">{w.label}</span>
         </nav>
-        <h1 className="mt-1 text-[15px] font-medium text-[#333]">
-          {q ? `Results for “${q}”` : "Search for sarees"}
-        </h1>
+        <h1 className="sr-only">{w.label} Sarees</h1>
 
         <div className="mt-6">
           <ShopByWeave bare />
@@ -79,7 +99,6 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           basePath={basePath}
           className="mt-10 flex flex-col lg:grid lg:grid-cols-[272px_minmax(0,1fr)] gap-x-6 gap-y-6 items-start"
         >
-          <input type="hidden" name="q" value={q} />
           <input type="hidden" name="sort" value={sortParam} />
           {sp.sale && <input type="hidden" name="sale" value={asOne(sp.sale)} />}
           <MobileFilterToggle>
@@ -106,22 +125,18 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               <SortSelect basePath={basePath} currentSort={sortParam} baseQuery={buildQuery(sp, ["sort"]).toString()} />
             </div>
 
-            {q && nodes.length === 0 ? (
-              <p className="py-16 text-center text-sm text-[#888]">No sarees match “{q}”. Try a different term or browse the weaves above.</p>
-            ) : (
-              <InfiniteProducts
-                key={JSON.stringify(sp)}
-                resetKey={JSON.stringify(sp)}
-                initial={nodes}
-                cursor={pageInfo.endCursor}
-                hasNext={pageInfo.hasNextPage}
-                loadMore={loadMoreWeaveResults.bind(null, q, filters, sort?.sortKey, sort?.reverse)}
-                plp
-                saleOnly={Boolean(sp.sale)}
-                keywordGroups={keywordGroups}
-                minDiscount={disc ? Number(disc) : undefined}
-              />
-            )}
+            <InfiniteProducts
+              key={weave + JSON.stringify(sp)}
+              resetKey={weave + JSON.stringify(sp)}
+              initial={nodes}
+              cursor={pageInfo.endCursor}
+              hasNext={pageInfo.hasNextPage}
+              loadMore={loadMoreWeaveResults.bind(null, w.query, filters, sort?.sortKey, sort?.reverse)}
+              plp
+              saleOnly={Boolean(sp.sale)}
+              keywordGroups={keywordGroups}
+              minDiscount={disc ? Number(disc) : undefined}
+            />
           </div>
         </FilterForm>
       </div>

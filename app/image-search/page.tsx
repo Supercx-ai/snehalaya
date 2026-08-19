@@ -1,11 +1,11 @@
-import ImageSearchUpload from "@/components/ImageSearchUpload";
+import type { Metadata } from "next";
+import { topPicks } from "@/lib/search";
+import { getColorFilterValues } from "@/lib/shopify";
+import ImageSearchResults from "@/components/ImageSearchResults";
 
-export default function ImageSearchPage() {
-  return (
-    <main>
-      <h1>Search by photo</h1>
-      <p style={{ color: "#666" }}>Upload a photo of a saree — we'll find the closest matches in our catalogue.</p>
-      <ImageSearchUpload />
-    </main>
-  );
+export const metadata: Metadata = { title: "Search by Image", robots: { index: false } };
+
+export default async function ImageSearchPage() {
+  const [fallback, colours] = await Promise.all([topPicks(), getColorFilterValues()]);
+  return <ImageSearchResults fallback={fallback} colours={colours.map((c) => c.label)} />;
 }
