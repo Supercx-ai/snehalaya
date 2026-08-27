@@ -71,6 +71,23 @@ module.exports = {
       letterSpacing: {
         wide2: "1px", // hero button labels — node 0:78, 0:80
       },
+      // Maharani photo columns (node 2191:606) drift in opposite directions. One cell is
+      // 213px tall + 15px gap, so a set of three advances exactly 684px — translating by
+      // that much lands cell 4 where cell 1 started, which is why the loop has no seam.
+      keyframes: {
+        "column-up": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(-684px)" },
+        },
+        "column-down": {
+          from: { transform: "translateY(-684px)" },
+          to: { transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "column-up": "column-up 40s linear infinite",
+        "column-down": "column-down 40s linear infinite",
+      },
     },
   },
   plugins: [],

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function KanjivaramEdit() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-8">
+    <section className="px-4 md:px-[30px] py-8">
       {/* aspect-[1280/737] (the asset's real pixel size) from md: up shows the baked-in
           thumbnail strip near the bottom uncropped, with text top-aligned above it. Below
           md: the image is too narrow for that ratio to leave room for the text, so it keeps

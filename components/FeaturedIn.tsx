@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function FeaturedIn() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-8 text-center">
+    <section className="px-4 md:px-[30px] py-8 text-center">
       <p className="font-display font-light text-3xl text-ink" style={{ fontVariant: "small-caps" }}>
         Featured In
       </p>

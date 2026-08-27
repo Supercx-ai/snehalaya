@@ -56,7 +56,7 @@ export default function Footer() {
     <footer className="bg-white border-t-[6px] border-accent">
       {/* Mobile Figma stacks the brand block and every link column full-width, one after
           another — it's only a 5-up grid from md: up. */}
-      <div className="max-w-[1280px] mx-auto px-4 md:px-9 py-16 grid grid-cols-1 md:grid-cols-5 gap-8">
+      <div className="px-4 md:px-[30px] py-16 grid grid-cols-1 md:grid-cols-5 gap-8">
         <div>
           <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={112} height={23} className="h-[26px] w-auto" />
           <p className="mt-4 font-display text-xl text-ink">Authentic Indian silk sarees, woven with intention.</p>
@@ -94,7 +94,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-accent/[.28]">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-9 py-6 flex flex-wrap items-center justify-center md:justify-between gap-4">
+        <div className="px-4 md:px-[30px] py-6 flex flex-wrap items-center justify-center md:justify-between gap-4">
           <div className="flex flex-wrap justify-center gap-2">
             {PAYMENT_BADGES.map((b) => (
               <span key={b} className="h-[26px] px-2.5 flex items-center rounded text-2xs tracking-wide bg-border-subtle text-ink">

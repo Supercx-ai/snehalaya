@@ -68,7 +68,7 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
       <Image src="/figma/find/border.png" alt="" width={1280} height={49} className="w-full h-auto" />
       <Image src="/figma/find/backdrop-texture.png" alt="" fill className="absolute inset-0 object-cover -z-10" />
 
-      <div className="relative max-w-[1280px] mx-auto px-4 md:px-9 py-12 grid grid-cols-1 md:grid-cols-[1fr_409px] gap-8 md:gap-10 items-start">
+      <div className="relative px-4 md:px-[30px] py-12 grid grid-cols-1 md:grid-cols-[1fr_409px] gap-8 md:gap-10 items-start">
         <div>
           <h2 className="font-display font-light text-heading-sm md:text-heading-xl text-ink">Find Your Saree</h2>
           <p className="mt-1 text-base text-ink-subtle">Choose a weave and a colour — we&apos;ll narrow the collection to match.</p>
@@ -126,7 +126,7 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
                   {colourLabel && <span className="text-ink"> · {colourLabel}</span>}
                 </p>
                 <p className="mt-1 text-xs text-ink-subtle">
-                  {pending ? "Counting…" : `${count ?? 0} saree${count === 1 ? "" : "s"} match your selection`}
+                  {pending ? "Counting…" : `${count ?? 0} saree${count === 1 ? " matches" : "s match"} your selection`}
                 </p>
               </div>
             </div>

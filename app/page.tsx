@@ -1,4 +1,4 @@
-import { getColorFilterValues, getFabricFilterValues, getCollection } from "@/lib/shopify";
+import { getColorFilterValues, getFabricFilterValues, getCollection, getProductsPage, type Product } from "@/lib/shopify";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
 import InstagramFeed from "@/components/InstagramFeed";
 import BrandAmbassador from "@/components/BrandAmbassador";
@@ -25,14 +25,25 @@ export const revalidate = 600; // ISR: rebuild at most every 10 min; webhook bus
 
 export default async function Home() {
   // One round-trip each, in parallel.
-  const [colours, fabrics, newArrivals, trending, snehasPicks] = await Promise.all([
+  const [colours, fabrics, newArrivals, trending, snehasPicks, latest] = await Promise.all([
     getColorFilterValues(),
     getFabricFilterValues(),
     getCollection("new-arrival", { first: 10, sortKey: "CREATED", reverse: true }),
     getCollection("new-arrival", { first: 8, sortKey: "BEST_SELLING" }),
     getCollection("festive-kanjivarams", { first: 8 }),
+    getProductsPage(16, undefined, "CREATED_AT", true),
   ]);
-  const newArrivalProducts = newArrivals?.products.nodes ?? [];
+
+  // New Arrivals and Trending & Sneha's Picks both self-hide when their list is empty, so a
+  // missing or renamed collection silently deletes the section from the homepage — which is
+  // what happens today, since neither "new-arrival" nor "festive-kanjivarams" exists on the
+  // catalogue this build is pointed at. Falling back to the newest products keeps the
+  // sections on the page; curate the collections in Admin and they take over automatically.
+  const latestProducts = latest.nodes;
+  const fallback = (curated: Product[] | undefined, from: number, to: number) =>
+    curated && curated.length > 0 ? curated : latestProducts.slice(from, to);
+
+  const newArrivalProducts = fallback(newArrivals?.products.nodes, 0, 10);
   // Show 2 different products in the promo card when the catalogue is large enough;
   // otherwise fall back to reusing the first 2 rather than rendering an empty gap.
   const promoProducts = newArrivalProducts.length > 8 ? newArrivalProducts.slice(8, 10) : newArrivalProducts.slice(0, 2);
@@ -47,7 +58,7 @@ export default async function Home() {
       <SearchByImagePromo products={promoProducts} />
       <PromoBanner />
       <KanjivaramEdit />
-      <TrendingPicks trending={trending?.products.nodes ?? []} snehasPicks={snehasPicks?.products.nodes ?? []} />
+      <TrendingPicks trending={fallback(trending?.products.nodes, 0, 8)} snehasPicks={fallback(snehasPicks?.products.nodes, 8, 16)} />
       <MaharaniPromo />
       <LiveShoppingPromo />
       <ShopTheLook />

@@ -4,7 +4,7 @@ import { STORES } from "@/lib/stores";
 
 export default function OurStores() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-12">
+    <section className="px-4 md:px-[30px] py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {STORES.map((s) => (
           <div key={s.city} className="rounded-lg overflow-hidden border border-border-strong bg-white">

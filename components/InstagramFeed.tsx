@@ -1,45 +1,59 @@
 import Image from "next/image";
+import { getInstagramReels, posterUrl, videoUrl, captionSummary, INSTAGRAM_HANDLE } from "@/lib/instagram";
+import ReelTile from "./ReelTile";
 
-// Instagram Basic Display / Graph API feed — needs a long-lived access token.
-// Get one via https://developers.facebook.com/docs/instagram-basic-display-api
-const TOKEN = process.env.INSTAGRAM_ACCESS_TOKEN;
-const HANDLE = process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE ?? "snehalayaasilks";
+// Reel stills lifted from the comp's own scroller (node 2191:770, layer "sneha-scroll").
+// They already carry the play ring and the Instagram badge, so they render flat — no
+// overlay treatment on top. Only used when the API is unconfigured or unreachable.
+const FALLBACK_REELS = [
+  "/figma/instagram/reel-1.png",
+  "/figma/instagram/reel-2.png",
+  "/figma/instagram/reel-3.png",
+];
 
-type InstagramPost = { id: string; media_url: string; thumbnail_url?: string; permalink: string; media_type: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM" };
+const TILE = "relative block w-[264px] shrink-0 rounded-card overflow-hidden aspect-[264/352] bg-border-subtle";
 
+// The section used to `return null` whenever the token was missing, which removed it from
+// the page entirely. It always renders now: live reels when the integration is configured,
+// the comp's stills otherwise.
 export default async function InstagramFeed() {
-  if (!TOKEN) return null; // ponytail: hidden until INSTAGRAM_ACCESS_TOKEN is set
-
-  const res = await fetch(
-    `https://graph.instagram.com/me/media?fields=id,media_url,thumbnail_url,permalink,media_type&access_token=${TOKEN}`,
-    { next: { revalidate: 3600 } }
-  );
-  if (!res.ok) return null;
-  const { data: posts }: { data: InstagramPost[] } = await res.json();
+  const reels = await getInstagramReels(12);
+  const profileUrl = `https://instagram.com/${INSTAGRAM_HANDLE}`;
 
   return (
-    <section className="max-w-[1280px] mx-auto px-9 py-12">
+    <section className="px-4 md:px-[30px] py-12">
       <div className="flex gap-6 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none]">
-        {posts.slice(0, 6).map((p) => (
-          <a key={p.id} href={p.permalink} target="_blank" rel="noopener noreferrer" className="relative block w-[264px] shrink-0 rounded-card overflow-hidden aspect-[264/352] bg-border-subtle">
-            {/* External, unpredictable-domain images from the Instagram API — next/image needs a static remote pattern per host, plain <img> avoids that per-account config */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.media_type === "VIDEO" ? p.thumbnail_url ?? p.media_url : p.media_url} alt="" className="absolute inset-0 size-full object-cover" />
-            {p.media_type === "VIDEO" && (
-              <Image src="/figma/instagram/play-overlay.png" alt="" width={73} height={73} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-80" />
-            )}
-            <Image src="/figma/instagram/badge-icon.png" alt="" width={35} height={35} className="absolute bottom-4 right-4 opacity-70" />
-          </a>
-        ))}
+        {reels
+          ? reels.map((m) => {
+              const caption = captionSummary(m);
+              return (
+                // Instagram CDN URLs are signed and short-lived and sit on rotating
+                // fbcdn hosts, so these bypass next/image entirely.
+                <ReelTile
+                  key={m.id}
+                  src={videoUrl(m)}
+                  poster={posterUrl(m)}
+                  href={m.permalink}
+                  label={caption ? `Instagram reel: ${caption}` : `Reel from @${INSTAGRAM_HANDLE}`}
+                  className={TILE}
+                />
+              );
+            })
+          : FALLBACK_REELS.map((src, i) => (
+              <a key={src} href={profileUrl} target="_blank" rel="noopener noreferrer" className={TILE}>
+                <Image src={src} alt={`Snehalayaa Silks reel ${i + 1} on Instagram`} fill sizes="264px" className="object-cover" />
+              </a>
+            ))}
       </div>
+
       <a
-        href={`https://instagram.com/${HANDLE}`}
+        href={profileUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-6 flex items-center justify-center gap-2.5 font-display text-2xl text-ink"
       >
         <Image src="/figma/instagram/follow-icon.png" alt="" width={42} height={42} />
-        Follow on Instagram <span className="text-primary">@{HANDLE}</span>
+        Follow on Instagram <span className="text-primary">@{INSTAGRAM_HANDLE}</span>
       </a>
     </section>
   );

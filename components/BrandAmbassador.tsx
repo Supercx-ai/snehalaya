@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function BrandAmbassador() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-12">
+    <section className="px-4 md:px-[30px] py-12">
       <div className="relative rounded-[18px] border-2 border-accent/40 overflow-hidden bg-[#fef5e7]">
         {/* Desktop: photo fills the card, text overlays on the right 55%. Mobile Figma
             flips the order entirely — heading + copy come first, photo + signature sit

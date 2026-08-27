@@ -44,6 +44,18 @@ export async function findSarees(fabricSlug: string | null, colourSlug: string |
   // price filtering server-side once Shopify's combined query+filter behavior is sorted out.
   const page = await searchProducts(terms.join(" "), { first: 250, filters });
   let products = page.nodes;
+
+  // Storefront search ORs its terms — verified live that "Cotton Red" returns MORE hits
+  // (16) than "Cotton" alone (10). So the multi-term query is only a recall net; the
+  // actual AND across fabric + colour has to be applied here, or picking a colour would
+  // widen the result set instead of narrowing it.
+  if (terms.length > 1) {
+    products = products.filter((p) => {
+      const haystack = `${p.title} ${p.weaveType?.value ?? ""} ${(p.tags ?? []).join(" ")}`.toLowerCase();
+      return terms.every((t) => haystack.includes(t.toLowerCase()));
+    });
+  }
+
   if (price) {
     products = products.filter((p) => {
       const amount = Number(p.priceRange.minVariantPrice.amount);

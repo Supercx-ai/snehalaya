@@ -19,7 +19,7 @@ export default function PromoBanner() {
   }, []);
 
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-8">
+    <section className="px-4 md:px-[30px] py-8">
       <div className="relative rounded-lg overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-out"

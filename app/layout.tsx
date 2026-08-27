@@ -61,7 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {/* Mobile: hamburger / logo / icons — the classic 1fr-auto-1fr grid keeps the
                 logo genuinely centered even though the hamburger (20px) and icon cluster
                 (84px) are different widths; desktop reverts to a plain flex row. */}
-            <div className="mx-auto max-w-[1280px] grid grid-cols-[1fr_auto_1fr] md:flex items-center gap-3 md:gap-6 px-4 md:px-8 py-[10px]">
+            <div className="grid grid-cols-[1fr_auto_1fr] md:flex items-center gap-3 md:gap-6 px-4 md:px-[30px] py-[10px]">
               <MobileNav nav={NAV} initialCountry={country} />
 
               <Link href="/" className="shrink-0 justify-self-center md:justify-self-auto">
@@ -106,7 +106,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
 
             <nav className="hidden md:block border-t border-border-subtle">
-              <div className="relative mx-auto max-w-[1280px] px-4 md:px-8">
+              <div className="relative px-4 md:px-[30px]">
                 <div className="flex gap-6 md:gap-8 text-base whitespace-nowrap overflow-x-auto">
                   {NAV.map((item, i) =>
                     item.label === "Kanjivaram" ? (

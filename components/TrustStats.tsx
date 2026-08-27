@@ -11,7 +11,7 @@ const STATS = [
 
 export default function TrustStats() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-6">
+    <section className="px-4 md:px-[30px] py-6">
       <div className="bg-cream flex overflow-x-auto md:overflow-visible [scrollbar-width:none]">
         {STATS.map((s, i) => (
           <div

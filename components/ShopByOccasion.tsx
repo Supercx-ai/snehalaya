@@ -15,7 +15,7 @@ export default function ShopByOccasion() {
   const [large, ...small] = OCCASIONS;
 
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-12">
+    <section className="px-4 md:px-[30px] py-12">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
         <div>
           <h2 className="font-display font-light text-heading-sm md:text-8xl text-ink">Shop by Occasion</h2>

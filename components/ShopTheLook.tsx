@@ -11,7 +11,7 @@ const LOOKS = [
 
 export default function ShopTheLook() {
   return (
-    <section className="max-w-[1280px] mx-auto pl-4 md:px-9 py-12">
+    <section className="pl-4 md:px-[30px] py-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 text-center md:text-left pr-4 md:pr-0">
         <div>
           <h2 className="font-display font-light text-heading-sm md:text-heading-xl text-ink">Shop the Look</h2>

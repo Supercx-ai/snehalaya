@@ -11,7 +11,7 @@ export default function NewArrivals({ products }: { products: Product[] }) {
   if (products.length === 0) return null;
 
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-16">
+    <section className="px-4 md:px-[30px] py-16">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
           <h2 className="font-display font-light text-heading-sm md:text-heading-lg text-ink">New Arrivals</h2>

@@ -7,7 +7,7 @@ import ProductCard from "./ProductCard";
 // Pinecone) rather than re-implementing an upload widget inline.
 export default function SearchByImagePromo({ products }: { products: Product[] }) {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-9 py-8">
+    <section className="px-4 md:px-[30px] py-8">
       <div className="relative rounded-lg overflow-hidden px-6 py-10 md:px-14 md:py-16 grid md:grid-cols-[1fr_auto] gap-10 items-center">
         <Image src="/figma/promo/card-texture.png" alt="" fill className="absolute inset-0 object-cover -z-10" />
         <div className="relative">

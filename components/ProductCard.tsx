@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { Product } from "@/lib/shopify";
 import WishlistHeart from "./WishlistHeart";
+import FindSimilarBar from "./FindSimilarBar";
 import LocalizedPrice from "./LocalizedPrice";
 import { useCart } from "./CartProvider";
 
@@ -29,7 +29,6 @@ function deriveCategory(p: Product): string | null {
 export default function ProductCard({
   product: p, showNewBadge, fluid, fullWidth, quickAdd, plp,
 }: { product: Product; showNewBadge?: boolean; fluid?: boolean; fullWidth?: boolean; quickAdd?: boolean; plp?: boolean }) {
-  const router = useRouter();
   const { addLine } = useCart();
   const firstVariant = p.variants.nodes[0];
   const compareAt = p.compareAtPriceRange?.minVariantPrice;
@@ -94,25 +93,7 @@ export default function ProductCard({
             +
           </button>
         )}
-        {!plp && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            router.push(`/search?q=${encodeURIComponent(similarQuery)}`);
-          }}
-          className="absolute inset-x-0 bottom-0 h-12 bg-cream flex items-center justify-between pl-4 pr-1.5"
-        >
-          <span className="flex items-center gap-1.5 text-xs text-ink">
-            <span className="text-accent text-lg leading-none">•</span>
-            Find Similar
-          </span>
-          <span className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shrink-0">
-            <Image src="/figma/icon-image-search.svg" alt="" width={16} height={16} />
-          </span>
-        </button>
-        )}
+        <FindSimilarBar query={similarQuery} />
       </div>
       {plp ? (
         /* PLP comp meta: category Manrope 14/1.5px gold, title Cormorant 19, price Manrope Medium 14 —
