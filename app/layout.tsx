@@ -50,7 +50,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className={`${manrope.variable} ${cormorant.variable}`}>
-      <body className="font-sans text-ink bg-white">
+      {/* Page fill is #faf7f2 in the comp (every page frame carries it), not white — the
+          sections after Brand Ambassador have no background of their own and were showing
+          through to white. */}
+      <body className="font-sans text-ink bg-cream">
         <Suspense fallback={null}>
           <GoogleAnalytics />
         </Suspense>

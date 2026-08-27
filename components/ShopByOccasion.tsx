@@ -16,18 +16,18 @@ export default function ShopByOccasion() {
 
   return (
     <section className="px-4 md:px-[30px] py-12">
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="font-display font-light text-heading-sm md:text-8xl text-ink">Shop by Occasion</h2>
           <p className="mt-2 text-base text-ink-secondary">Every celebration has its saree. Find yours by the moment.</p>
         </div>
-        <Link href="/collections" className="hidden md:flex items-center justify-center h-[41px] px-8 rounded-sm bg-primary text-cream text-2xs font-semibold tracking-wide2 uppercase whitespace-nowrap self-start">
+        <Link href="/collections" className="hidden md:flex items-center justify-center h-[41px] px-8 rounded-sm bg-primary text-cream text-2xs font-semibold tracking-wide2 uppercase whitespace-nowrap">
           Explore Collection
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <OccasionCard {...large} className="col-span-2 md:col-span-1 md:row-span-2 aspect-[3/2] md:aspect-auto" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <OccasionCard {...large} className="col-span-2 md:row-span-2 aspect-[3/2] md:aspect-auto" />
         {small.map((o) => (
           <OccasionCard key={o.label} {...o} className="aspect-[293/223]" />
         ))}

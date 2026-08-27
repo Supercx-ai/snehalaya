@@ -83,10 +83,18 @@ module.exports = {
           from: { transform: "translateY(-684px)" },
           to: { transform: "translateY(0)" },
         },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
+        },
       },
+      // Announcement bar (node 2191:2) scrolls its messages right-to-left. The track holds
+      // two identical copies, so travelling exactly -50% lands copy 2 where copy 1 began —
+      // that's what makes the loop seamless regardless of how long the message list is.
       animation: {
         "column-up": "column-up 40s linear infinite",
         "column-down": "column-down 40s linear infinite",
+        marquee: "marquee 38s linear infinite",
       },
     },
   },
