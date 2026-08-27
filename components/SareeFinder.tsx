@@ -4,14 +4,20 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { findSarees } from "@/lib/sareeFinder";
-import { PRICE_RANGES } from "@/lib/weaves";
-import { slugifyColour, colourSwatch } from "@/lib/colours";
+import { PRICE_RANGES, FINDER_FABRICS } from "@/lib/weaves";
+import { slugifyColour, colourSwatch, FINDER_COLOURS } from "@/lib/colours";
 import type { ColorFilterValue, Product } from "@/lib/shopify";
 
 export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilterValue[]; colours: ColorFilterValue[] }) {
-  const [fabricSlug, setFabricSlug] = useState<string | null>(fabrics[0] ? slugifyColour(fabrics[0].label) : null);
+  // Live Shopify facets win when the store exposes them as filters; otherwise the comp's
+  // own rows render and filter by keyword. Previously an empty facet dropped the whole
+  // row, leaving the section with nothing but Price Range.
+  const fabricOptions = fabrics.length > 0 ? fabrics.map((f) => f.label) : FINDER_FABRICS.map((f) => f.label);
+  const colourOptions = colours.length > 0 ? colours.map((c) => c.label) : FINDER_COLOURS.map((c) => c.label);
+  // Comp opens on the first fabric + first colour selected (Kanjivaram · Red), not "All".
+  const [fabricSlug, setFabricSlug] = useState<string | null>(slugifyColour(fabricOptions[0]));
   const [priceIndex, setPriceIndex] = useState(0);
-  const [colourSlug, setColourSlug] = useState<string | null>(null);
+  const [colourSlug, setColourSlug] = useState<string | null>(slugifyColour(colourOptions[0]));
   const [count, setCount] = useState<number | null>(null);
   const [preview, setPreview] = useState<Product["featuredImage"]>(null);
   const [pending, setPending] = useState(false);
@@ -27,8 +33,8 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
     return () => { cancelled = true; };
   }, [fabricSlug, colourSlug, price.min, price.max]);
 
-  const fabricLabel = fabricSlug === null ? "All fabrics" : fabrics.find((f) => slugifyColour(f.label) === fabricSlug)?.label;
-  const colourLabel = colourSlug === null ? null : colours.find((c) => slugifyColour(c.label) === colourSlug)?.label;
+  const fabricLabel = fabricSlug === null ? "All fabrics" : fabricOptions.find((l) => slugifyColour(l) === fabricSlug);
+  const colourLabel = colourSlug === null ? null : colourOptions.find((l) => slugifyColour(l) === colourSlug);
 
   // Dynamic: follows the current fabric/colour/price selection, using the first matching
   // product's photo (falls back to the static shot while that fetch is still pending).
@@ -69,19 +75,16 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
 
           {/* Mobile Figma keeps every pill/swatch row as a horizontal-scroll strip, same
               as the card carousels elsewhere — it only wraps from md: up. */}
-          {fabrics.length > 0 && (
-            <div className="mt-8">
-              <div className="text-xs tracking-wide2 text-ink">Fabric / Weave</div>
-              <div className="mt-3 flex gap-2 flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible pb-1 [scrollbar-width:none]">
-                <Pill active={fabricSlug === null} onClick={() => setFabricSlug(null)}>All</Pill>
-                {fabrics.map((f) => (
-                  <Pill key={f.label} active={fabricSlug === slugifyColour(f.label)} onClick={() => setFabricSlug(slugifyColour(f.label))}>
-                    {f.label}
-                  </Pill>
-                ))}
-              </div>
+          <div className="mt-8">
+            <div className="text-xs tracking-wide2 text-ink">Fabric / Weave</div>
+            <div className="mt-3 flex gap-2 flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible pb-1 [scrollbar-width:none]">
+              {fabricOptions.map((label) => (
+                <Pill key={label} active={fabricSlug === slugifyColour(label)} onClick={() => setFabricSlug(slugifyColour(label))}>
+                  {label}
+                </Pill>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Mobile Figma places the photo panel right after Fabric/Weave, before Price
               Range — desktop keeps it as the side column instead (rendered further down). */}
@@ -96,23 +99,20 @@ export default function SareeFinder({ fabrics, colours }: { fabrics: ColorFilter
             </div>
           </div>
 
-          {colours.length > 0 && (
-            <div className="mt-6">
-              <div className="text-xs tracking-wide2 text-ink">Colour</div>
-              <div className="mt-3 flex gap-4 flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible py-1.5 [scrollbar-width:none]">
-                <Swatch active={colourSlug === null} label="All" onClick={() => setColourSlug(null)} swatch="#fff" />
-                {colours.map((c) => (
-                  <Swatch
-                    key={c.label}
-                    active={colourSlug === slugifyColour(c.label)}
-                    label={c.label}
-                    swatch={colourSwatch(c.label)}
-                    onClick={() => setColourSlug(slugifyColour(c.label))}
-                  />
-                ))}
-              </div>
+          <div className="mt-6">
+            <div className="text-xs tracking-wide2 text-ink">Colour</div>
+            <div className="mt-3 flex gap-4 flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible py-1.5 [scrollbar-width:none]">
+              {colourOptions.map((label) => (
+                <Swatch
+                  key={label}
+                  active={colourSlug === slugifyColour(label)}
+                  label={label}
+                  swatch={colourSwatch(label)}
+                  onClick={() => setColourSlug(slugifyColour(label))}
+                />
+              ))}
             </div>
-          )}
+          </div>
 
           <div className="mt-8 pt-6 border-t border-border-strong flex items-center justify-between gap-6 flex-wrap">
             <div className="flex items-center gap-4">
@@ -159,7 +159,7 @@ function Pill({ active, accent, onClick, children }: { active: boolean; accent?:
 
 function Swatch({ active, label, swatch, onClick }: { active: boolean; label: string; swatch: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex flex-col items-center gap-2 w-14 md:w-[74px] shrink-0" title={label}>
+    <button onClick={onClick} className="flex flex-col items-center gap-1.5 w-14 md:w-[74px] shrink-0" title={label}>
       <span
         className={`relative block w-14 h-14 md:w-[74px] md:h-[74px] rounded-swatch ${active ? "ring-2 ring-accent ring-offset-2" : "ring-1 ring-border-strong"}`}
         style={{ background: swatch }}
@@ -168,7 +168,7 @@ function Swatch({ active, label, swatch, onClick }: { active: boolean; label: st
           <Image src="/figma/find/pattern-texture.png" alt="" fill className="object-cover opacity-20 mix-blend-overlay" />
         </span>
       </span>
-      <span className={`text-xs ${active ? "text-primary font-semibold" : "text-ink-secondary"}`}>{label}</span>
+      <span className={`text-xs ${active ? "text-primary font-semibold" : "text-[#777777]"}`}>{label}</span>
     </button>
   );
 }

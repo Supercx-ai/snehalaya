@@ -65,7 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <MobileNav nav={NAV} initialCountry={country} />
 
               <Link href="/" className="shrink-0 justify-self-center md:justify-self-auto">
-                <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={126} height={42} priority className="h-[48px] md:h-[42px] w-auto" />
+                <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={205} height={42} priority className="h-[34px] md:h-[38px] w-auto" />
               </Link>
 
               <div className="hidden md:block">

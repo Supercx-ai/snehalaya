@@ -26,7 +26,7 @@ export default function MobileNav({ nav, initialCountry }: { nav: NavItem[]; ini
           <div onClick={() => setOpen(false)} className="absolute inset-0 bg-black/40" />
           <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] bg-cream shadow-lg p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={110} height={37} className="h-[32px] w-auto" />
+              <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={156} height={32} className="h-[30px] w-auto" />
               <button onClick={() => setOpen(false)} aria-label="Close menu" className="text-2xl text-ink leading-none">&times;</button>
             </div>
 

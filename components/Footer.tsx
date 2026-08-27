@@ -58,7 +58,7 @@ export default function Footer() {
           another — it's only a 5-up grid from md: up. */}
       <div className="max-w-[1280px] mx-auto px-4 md:px-9 py-16 grid grid-cols-1 md:grid-cols-5 gap-8">
         <div>
-          <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={138} height={23} className="h-[23px] w-auto" />
+          <Image src="/figma/logo.png" alt="Snehalayaa Silks" width={112} height={23} className="h-[26px] w-auto" />
           <p className="mt-4 font-display text-xl text-ink">Authentic Indian silk sarees, woven with intention.</p>
           <div className="mt-6 flex gap-3">
             <span className="w-[18px] h-[18px] text-accent" aria-hidden>

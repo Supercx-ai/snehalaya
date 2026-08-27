@@ -4,7 +4,7 @@ export const PRICE_RANGES = [
   { label: "Under ₹5k", min: undefined, max: 5000 },
   { label: "₹5k–₹10k", min: 5000, max: 10000 },
   { label: "₹10k–₹25k", min: 10000, max: 25000 },
-  { label: "₹25k–₹55k", min: 25000, max: 55000 },
+  { label: "₹25k+", min: 25000, max: undefined },
   { label: "₹55k+", min: 55000, max: undefined },
 ] as const;
 
@@ -29,6 +29,20 @@ export const WEAVES: Weave[] = [
   { slug: "chettinad-cotton", label: "Chettinad Cotton", query: "Chettinad", image: "/figma/weaves/plp/chettinad.png?v=2", w: 363, h: 453 },
   { slug: "tussara", label: "Tussara", query: "Tussar", image: "/figma/weaves/plp/tussara.png?v=2", w: 362, h: 453 },
 ];
+
+// The Find Your Saree fabric row (Figma node 2191:864). Its own list on purpose — the
+// comp's fabrics (Kanjivaram, Tant, Chanderi, Paithani...) are a different set from the
+// Shop-by-Weave strip above, which is what WEAVES drives. `query` is the Storefront search
+// term used when the store has no Fabric category-metafield facet configured.
+export const FINDER_FABRICS = [
+  { label: "Kanjivaram", query: "Kanjivaram" },
+  { label: "Banarasi", query: "Banarasi" },
+  { label: "Tant", query: "Tant" },
+  { label: "Chanderi", query: "Chanderi" },
+  { label: "Paithani", query: "Paithani" },
+  { label: "Tussar Silk", query: "Tussar" },
+  { label: "Cotton Silk", query: "Cotton" },
+] as const;
 
 export function getWeave(slug: string): Weave | undefined {
   return WEAVES.find((w) => w.slug === slug);

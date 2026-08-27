@@ -1,28 +1,40 @@
 "use server";
 
 import { getColorFilterValues, getFabricFilterValues, searchProducts, type Product } from "./shopify";
-import { resolveColourSlug } from "./colours";
+import { resolveColourSlug, slugifyColour, FINDER_COLOURS } from "./colours";
+import { FINDER_FABRICS } from "./weaves";
 
 export type PriceRange = { min?: number; max?: number };
 
-// Fabric and Colour are both resolved against live Category-metafield facets — verified
-// live that two taxonomyMetafield filters combine correctly in the same search() call.
+// A slug the live facet can't resolve still has to mean something. Previously any such
+// slug returned a hard 0 — which is what made the whole finder look broken on a store
+// that hasn't configured the Color/Fabric category metafields as filters in Search &
+// Discovery. Fall back to the comp's search term and let Shopify match title/tags.
+function searchTermFor(slug: string) {
+  const fabric = FINDER_FABRICS.find((f) => slugifyColour(f.label) === slug);
+  if (fabric) return fabric.query;
+  const colour = FINDER_COLOURS.find((c) => slugifyColour(c.label) === slug);
+  if (colour) return colour.label;
+  return slug.replace(/-+/g, " ");
+}
+
+// Fabric and Colour are both resolved against live Category-metafield facets first —
+// verified live that two taxonomyMetafield filters combine correctly in the same search()
+// call. Anything the facets don't know about degrades to a keyword term instead.
 export async function findSarees(fabricSlug: string | null, colourSlug: string | null, price: PriceRange | null) {
   const filters: Record<string, unknown>[] = [];
+  const terms: string[] = [];
 
   if (fabricSlug) {
-    const liveValues = await getFabricFilterValues();
-    const fabricFilter = resolveColourSlug(fabricSlug, liveValues);
-    // A fabric was picked but nothing has it set yet — real zero, not "show everything".
-    if (!fabricFilter) return { count: 0, capped: false, products: [] as Product[] };
-    filters.push(fabricFilter);
+    const fabricFilter = resolveColourSlug(fabricSlug, await getFabricFilterValues());
+    if (fabricFilter) filters.push(fabricFilter);
+    else terms.push(searchTermFor(fabricSlug));
   }
 
   if (colourSlug) {
-    const liveValues = await getColorFilterValues();
-    const colorFilter = resolveColourSlug(colourSlug, liveValues);
-    if (!colorFilter) return { count: 0, capped: false, products: [] as Product[] };
-    filters.push(colorFilter);
+    const colorFilter = resolveColourSlug(colourSlug, await getColorFilterValues());
+    if (colorFilter) filters.push(colorFilter);
+    else terms.push(searchTermFor(colourSlug));
   }
 
   // Both on "All" → empty query + no filters, which correctly matches every product
@@ -30,7 +42,7 @@ export async function findSarees(fabricSlug: string | null, colourSlug: string |
   // ponytail: fetch-then-filter is fine at current catalog size; at large scale with a
   // popular fabric+colour combo returning hundreds of matches, add real pagination + move
   // price filtering server-side once Shopify's combined query+filter behavior is sorted out.
-  const page = await searchProducts("", { first: 250, filters });
+  const page = await searchProducts(terms.join(" "), { first: 250, filters });
   let products = page.nodes;
   if (price) {
     products = products.filter((p) => {
