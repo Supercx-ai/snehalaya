@@ -5,9 +5,9 @@ import Image from "next/image";
 // full height — so she breaks out above the card's top edge. That's why the card can't be
 // the positioning context here: it clips, and the previous build had the photo inside it
 // with object-cover, which cropped her head off and lost the overhang entirely.
-const CARD_H = 434;
-const GROUP_H = 535;
-const PHOTO_W = 362;
+const CARD_H = 437; // comp node 2191:857
+const GROUP_H = 591; // comp 535; model scaled up per feedback, card height unchanged
+const PHOTO_W = 400; // comp 362
 const GAP = 40; // comp's auto-layout spacing between photo and copy
 
 export default function BrandAmbassador() {
@@ -27,10 +27,15 @@ export default function BrandAmbassador() {
     <section className="px-4 md:px-[30px] py-12">
       {/* Desktop — fixed-height stage so the cutout can overhang the card. */}
       <div className="relative hidden md:block" style={{ height: GROUP_H }}>
+        {/* Card per node 2191:857 — #fef5e7 under a gold floral plate, 2px #f0ce9a inside
+            stroke, radius 18. The florals live at the two edges with a transparent middle,
+            so object-cover keeps them pinned to the sides as the card widens. */}
         <div
-          className="absolute inset-x-0 bottom-0 rounded-[18px] border-2 border-accent/40 bg-[#fef5e7]"
+          className="absolute inset-x-0 bottom-0 overflow-hidden rounded-[18px] border-2 border-[#f0ce9a] bg-[#fef5e7]"
           style={{ height: CARD_H }}
-        />
+        >
+          <Image src="/figma/ambassador/floral.png" alt="" fill sizes="100vw" className="object-cover" />
+        </div>
         <Image
           src="/figma/ambassador/founder-photo.png"
           alt="Sneha, founder of Snehalayaa Silks"
@@ -38,7 +43,7 @@ export default function BrandAmbassador() {
           height={GROUP_H}
           priority={false}
           sizes="362px"
-          className="absolute bottom-0 left-0 object-contain object-bottom"
+          className="absolute bottom-0 -left-3 object-contain object-bottom"
           style={{ width: PHOTO_W, height: GROUP_H }}
         />
         <div
@@ -53,20 +58,27 @@ export default function BrandAmbassador() {
         </div>
       </div>
 
-      {/* Mobile — comp reorders to copy first, then photo + signature side by side. */}
-      <div className="md:hidden rounded-[18px] border-2 border-accent/40 bg-[#fef5e7] px-6 py-8">
-        {copy}
-        <div className="mt-6 flex items-end gap-4">
+      {/* Mobile — comp node 2191:1749 (419x470). Background is the comp's own cream+floral
+          composite: Figma places that floral with a Crop fill, which background-size can't
+          reproduce. The model is 188x280 (45% of the card) sitting FLUSH to the bottom edge;
+          the previous build floated a 140x210 thumbnail with cream space beneath it. */}
+      <div className="md:hidden relative overflow-hidden rounded-[18px] border-2 border-[#f0ce9a] bg-[#fef5e7]">
+        <Image src="/figma/ambassador/card-mobile.png" alt="" fill sizes="100vw" className="object-cover" />
+
+        <div className="relative px-5 pt-6">{copy}</div>
+
+        <div className="relative mt-5 flex items-end gap-2 pl-0 pr-5">
           <Image
             src="/figma/ambassador/founder-photo.png"
             alt="Sneha, founder of Snehalayaa Silks"
-            width={140}
-            height={210}
-            className="w-[140px] h-[210px] object-contain object-bottom shrink-0"
+            width={188}
+            height={280}
+            sizes="45vw"
+            className="-ml-2 w-[60%] h-auto shrink-0 object-contain object-bottom"
           />
-          <div>
+          <div className="pb-7">
             <Image src="/figma/ambassador/signature.png" alt="Sneha" width={110} height={53} />
-            <p className="mt-2 text-sm text-primary">Founder of Snehalayaa Silks - Actress Sneha.</p>
+            <p className="mt-1 text-xs text-primary">Founder of Snehalayaa Silks - Actress Sneha.</p>
           </div>
         </div>
       </div>

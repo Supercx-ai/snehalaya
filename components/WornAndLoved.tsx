@@ -43,9 +43,15 @@ export default function WornAndLoved() {
           <ReviewsWidget />
         </div>
       ) : (
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[22px]" id="judgeme-reviews">
+        // Mobile comp (node 2191:1640) runs these as a horizontal strip with the next card
+        // peeking in, not a vertical stack — hence the scroller below md:, bleeding to the
+        // screen edges so the first card still lines up with the section gutter.
+        <div
+          className="mt-10 -mx-4 flex snap-x snap-mandatory gap-[22px] overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4"
+          id="judgeme-reviews"
+        >
           {PLACEHOLDER_TESTIMONIALS.map((t) => (
-            <figure key={t.name} className="flex flex-col rounded-[8px] border border-border bg-white overflow-hidden text-left">
+            <figure key={t.name} className="flex w-[78%] max-w-[300px] shrink-0 snap-start flex-col overflow-hidden rounded-[8px] border border-border bg-white text-left md:w-auto md:max-w-none md:shrink">
               {/* The comp leaves these wells empty — no invented customer photos go here. */}
               <div className="aspect-[282/242] w-full bg-border-subtle" aria-hidden />
               <figcaption className="flex flex-col gap-3 px-5 py-5">

@@ -20,19 +20,34 @@ export default function PromoBanner() {
 
   return (
     <section className="px-4 md:px-[30px] py-8">
-      <div className="relative rounded-lg overflow-hidden">
+      {/* No CSS rounding here: the comp rounds only the top-left and bottom-right (~17px)
+          and leaves the other two sharp, and that shape is baked into the asset's alpha
+          along with the white inset outline. rounded-lg was rounding all four. overflow-hidden
+          stays — it clips the sliding track. */}
+      <div className="relative overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
           {Array.from({ length: SLIDE_COUNT }).map((_, i) => (
             <Link key={i} href="/search?q=raagam" className="block relative w-full shrink-0">
+              {/* The comp crops this differently per breakpoint: 1226x420 (2.92) on desktop
+                  but 418x255 (1.64) on mobile — not the same art scaled, so a single asset
+                  left the mobile banner far too short. */}
+              <Image
+                src="/figma/promo/raagam-banner-mobile.png"
+                alt="Raagam Silk Cotton — Zari Check Sarees"
+                width={1254}
+                height={766}
+                className="w-full h-auto md:hidden"
+                priority={i === 0}
+              />
               <Image
                 src="/figma/promo/raagam-banner.png"
                 alt="Raagam Silk Cotton — Zari Check Sarees"
-                width={1226}
-                height={420}
-                className="w-full h-auto"
+                width={2452}
+                height={840}
+                className="hidden w-full h-auto md:block"
                 priority={i === 0}
               />
             </Link>

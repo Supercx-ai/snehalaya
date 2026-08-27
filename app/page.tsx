@@ -1,4 +1,4 @@
-import { getColorFilterValues, getFabricFilterValues, getCollection, getProductsPage, type Product } from "@/lib/shopify";
+import { getColorFilterValues, getFabricFilterValues, getCollection, getProductsPage, searchProducts, type Product } from "@/lib/shopify";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
 import InstagramFeed from "@/components/InstagramFeed";
 import BrandAmbassador from "@/components/BrandAmbassador";
@@ -25,13 +25,21 @@ export const revalidate = 600; // ISR: rebuild at most every 10 min; webhook bus
 
 export default async function Home() {
   // One round-trip each, in parallel.
-  const [colours, fabrics, newArrivals, trending, snehasPicks, latest] = await Promise.all([
+  const [colours, fabrics, newArrivals, trending, snehasPicks, latest, kanjivaram] = await Promise.all([
     getColorFilterValues(),
     getFabricFilterValues(),
     getCollection("new-arrival", { first: 10, sortKey: "CREATED", reverse: true }),
     getCollection("new-arrival", { first: 8, sortKey: "BEST_SELLING" }),
     getCollection("festive-kanjivarams", { first: 8 }),
     getProductsPage(16, undefined, "CREATED_AT", true),
+    // The Kanjivaram Edit rail wants actual Kanjivarams: prefer the curated collection,
+    // fall back to a catalogue search on the weave name before giving up.
+    (async () => {
+      const curated = await getCollection("kanjivaram-silk", { first: 4 });
+      if (curated?.products.nodes.length) return curated.products.nodes;
+      const found = await searchProducts("Kanjivaram", { first: 4 });
+      return found.nodes;
+    })(),
   ]);
 
   // New Arrivals and Trending & Sneha's Picks both self-hide when their list is empty, so a
@@ -57,7 +65,7 @@ export default async function Home() {
       <NewArrivals products={newArrivalProducts.slice(0, 8)} />
       <SearchByImagePromo products={promoProducts} />
       <PromoBanner />
-      <KanjivaramEdit />
+      <KanjivaramEdit products={fallback(kanjivaram, 4, 8)} />
       <TrendingPicks trending={fallback(trending?.products.nodes, 0, 8)} snehasPicks={fallback(snehasPicks?.products.nodes, 8, 16)} />
       <MaharaniPromo />
       <LiveShoppingPromo />
